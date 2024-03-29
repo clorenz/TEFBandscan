@@ -1,0 +1,1 @@
+Utility to manually or automatically create a bandscan for TEF6686 based radios.

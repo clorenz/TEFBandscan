@@ -1,0 +1,16 @@
+app:
+  name: 'TEFBandscan'
+  version: '@project.version@'
+
+server:
+  port: 6686
+
+spring:
+  config:
+    activate:
+      on-profile: production
+
+tef6686:
+  hostname: hostname-of-your-radio
+  port: 7373
+  password: password

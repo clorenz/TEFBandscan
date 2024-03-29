@@ -1,0 +1,27 @@
+<configuration>
+  <springProfile name="default">
+    <include resource="org/springframework/boot/logging/logback/defaults.xml" />
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml" />
+
+    <property name="CONSOLE_LOG_PATTERN" value="%clr(%d{HH:mm:ss.SSS}){faint} %clr(%5p) %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n%wEx}"/>
+
+    <root level="info">
+      <appender-ref ref="CONSOLE" />
+    </root>
+  </springProfile>
+  <springProfile name="local">
+    <include resource="org/springframework/boot/logging/logback/defaults.xml" />
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml" />
+
+    <!-- Based on spring defaults, does not output thread information, shorter timestamp -->
+    <property name="CONSOLE_LOG_PATTERN" value="%clr(%d{HH:mm:ss.SSS}){faint} %clr(%5p) %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n%wEx}"/>
+
+    <logger name="de.christophlorenz.tefbanscan" level="debug" additivity="false">
+      <appender-ref ref="CONSOLE" />
+    </logger>
+
+    <root level="info">
+      <appender-ref ref="CONSOLE" />
+    </root>
+  </springProfile>
+</configuration>
