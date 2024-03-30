@@ -1,6 +1,6 @@
 package de.christophlorenz.tefbandscan.repository;
 
-public interface Repository {
+public interface CommunicationRepository {
 
     public void initialize() throws RepositoryException;
 

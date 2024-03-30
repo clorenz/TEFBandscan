@@ -20,6 +20,10 @@
       <appender-ref ref="CONSOLE" />
     </logger>
 
+    <logger name="org.hibernate" level="debug" additivity="false">
+      <appender-ref ref="CONSOLE" />
+    </logger>
+
     <root level="info">
       <appender-ref ref="CONSOLE" />
     </root>

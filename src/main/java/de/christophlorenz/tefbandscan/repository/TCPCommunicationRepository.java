@@ -13,16 +13,16 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 @Repository
-public class TCPRepository implements de.christophlorenz.tefbandscan.repository.Repository {
+public class TCPCommunicationRepository implements CommunicationRepository {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(TCPRepository.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(TCPCommunicationRepository.class);
 
     private final Tef6686Config config;
     Socket tef6686Socket;
     private BufferedReader reader;
     private PrintWriter writer;
 
-    public TCPRepository(Tef6686Config config) {
+    public TCPCommunicationRepository(Tef6686Config config) {
         this.config = config;
     }
 

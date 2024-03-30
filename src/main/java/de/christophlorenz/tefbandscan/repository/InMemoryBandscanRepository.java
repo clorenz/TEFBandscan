@@ -1,21 +1,23 @@
-package de.christophlorenz.tefbandscan.service;
+package de.christophlorenz.tefbandscan.repository;
 
 import de.christophlorenz.tefbandscan.model.Bandscan;
 import de.christophlorenz.tefbandscan.model.BandscanEntry;
+import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Service
-public class BandscanService {
+@Repository("inmemory")
+public class InMemoryBandscanRepository implements BandscanRepository {
 
     private Bandscan bandscan;
 
-    public BandscanService() {
+    public InMemoryBandscanRepository() {
         bandscan = new Bandscan(new ArrayList<>());
     }
 
+    @Override
     public void addEntry(Integer frequencyKHz, String rdsPI, String rdsPS, Integer quality) {
         if (frequencyKHz == null) {
             return;
@@ -24,6 +26,7 @@ public class BandscanService {
         bandscan.addBandscanEntry(bandscanEntry);
     }
 
+    @Override
     public List<BandscanEntry> getEntries() {
         return bandscan.bandscanEntries();
     }

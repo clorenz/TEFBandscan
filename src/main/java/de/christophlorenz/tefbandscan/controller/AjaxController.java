@@ -1,30 +1,24 @@
 package de.christophlorenz.tefbandscan.controller;
 
-import de.christophlorenz.tefbandscan.model.Bandscan;
-import de.christophlorenz.tefbandscan.model.BandscanEntry;
 import de.christophlorenz.tefbandscan.model.DataTableResponse;
 import de.christophlorenz.tefbandscan.model.Status;
-import de.christophlorenz.tefbandscan.service.BandscanService;
+import de.christophlorenz.tefbandscan.repository.InMemoryBandscanRepository;
 import de.christophlorenz.tefbandscan.service.ScannerService;
 import org.springframework.stereotype.Controller;
-import org.springframework.stereotype.Repository;
 import org.springframework.ui.Model;
-import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.Date;
-import java.util.List;
 
 @Controller
 public class AjaxController {
 
-    private final BandscanService bandscanService;
+    private final InMemoryBandscanRepository inMemoryBandscanRepository;
     private final ScannerService scannerService;
 
-    public AjaxController(BandscanService bandscanService, ScannerService scannerService) {
-        this.bandscanService = bandscanService;
+    public AjaxController(InMemoryBandscanRepository inMemoryBandscanRepository, ScannerService scannerService) {
+        this.inMemoryBandscanRepository = inMemoryBandscanRepository;
         this.scannerService = scannerService;
     }
 
@@ -49,6 +43,6 @@ public class AjaxController {
     @GetMapping("/bandscan")
     @ResponseBody
     public DataTableResponse getBandscan() {
-        return new DataTableResponse(bandscanService.getEntries(), bandscanService.getEntries().size());
+        return new DataTableResponse(inMemoryBandscanRepository.getEntries(), inMemoryBandscanRepository.getEntries().size());
     }
 }

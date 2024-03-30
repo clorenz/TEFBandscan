@@ -2,12 +2,14 @@ package de.christophlorenz.tefbandscan.service;
 
 import de.christophlorenz.tefbandscan.model.Status;
 import de.christophlorenz.tefbandscan.model.StatusHistory;
-import de.christophlorenz.tefbandscan.repository.Repository;
+import de.christophlorenz.tefbandscan.repository.BandscanRepository;
+import de.christophlorenz.tefbandscan.repository.CommunicationRepository;
 import de.christophlorenz.tefbandscan.repository.RepositoryException;
 import de.christophlorenz.tefbandscan.service.handler.RDSHandler;
 import de.christophlorenz.tefbandscan.service.handler.StatusHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -18,24 +20,24 @@ public class ScannerService {
     private static final long TIMEOUT_MILLIS = 2000;         // 2 seconds
     private static final long TIMEOUT_MILLIS_RDS = 30000;   // 30 seconds - should be enough for stable PS decoding
 
-    private final BandscanService bandscanService;
+    private final BandscanRepository bandscanRepository;
     private final RDSHandler rdsHandler;
     private final StatusHandler statusHandler;
 
     private final StatusHistory statusHistory;
 
-    private Repository repository;
+    private CommunicationRepository communicationRepository;
     private long lastAutoTimestamp=0;
 
-    public ScannerService(BandscanService bandscanService, RDSHandler rdsHandler, StatusHandler statusHandler) {
-        this.bandscanService = bandscanService;
+    public ScannerService(@Qualifier("sqlite") BandscanRepository bandscanRepository, RDSHandler rdsHandler, StatusHandler statusHandler) {
+        this.bandscanRepository = bandscanRepository;
         this.rdsHandler = rdsHandler;
         this.statusHandler = statusHandler;
         statusHistory = new StatusHistory();
     }
 
-    public void setRepository(Repository repository) {
-        this.repository = repository;
+    public void setCommunicationRepository(CommunicationRepository communicationRepository) {
+        this.communicationRepository = communicationRepository;
     }
 
 
@@ -44,7 +46,7 @@ public class ScannerService {
         if (auto) {
             startFrequency = 87500;
             try {
-                repository.write("T" + startFrequency);     // TODO refactor this into an API!
+                communicationRepository.write("T" + startFrequency);     // TODO refactor this into an API!
                 lastAutoTimestamp = System.currentTimeMillis();
             } catch (RepositoryException e) {
                 throw new ServiceException("Cannot start automatic scan: " + e, e);
@@ -56,7 +58,7 @@ public class ScannerService {
         String line;
         while (true) {
             try {
-                if (!((line = repository.read()) != null)) break;
+                if (!((line = communicationRepository.read()) != null)) break;
             } catch (RepositoryException e) {
                 throw new ServiceException("Cannot read line: " + e, e);
             }
@@ -74,7 +76,7 @@ public class ScannerService {
                     if (startFrequency < 108000) {
                         startFrequency += 100;
                         try {
-                            repository.write("T" + startFrequency);
+                            communicationRepository.write("T" + startFrequency);
                             lastAutoTimestamp = System.currentTimeMillis();
                         } catch (RepositoryException e) {
                             throw new ServiceException("Cannot set frequency to " + startFrequency + ": " + e, e);
@@ -109,10 +111,10 @@ public class ScannerService {
 
     private void blinkOnDevice()  {
         try {
-            repository.write("B1");
-            repository.read();
-            repository.write("B0");
-            repository.read();
+            communicationRepository.write("B1");
+            communicationRepository.read();
+            communicationRepository.write("B0");
+            communicationRepository.read();
         } catch (RepositoryException e) {
             LOGGER.warn("Cannot blink on device: " + e);
         }
@@ -124,7 +126,7 @@ public class ScannerService {
             case "M" -> {
                 if (statusHistory.hasEnoughData()) {
                     // Avoid logging during (fast) tuning
-                    bandscanService.addEntry(statusHandler.getCurrentFrequency(), rdsHandler.getPi(), rdsHandler.getPs(), Math.round(statusHandler.getSignalStrength()));
+                    bandscanRepository.addEntry(statusHandler.getCurrentFrequency(), rdsHandler.getPi(), rdsHandler.getPs(), Math.round(statusHandler.getSignalStrength()));
                 }
                 rdsHandler.reset();
                 statusHandler.reset();
@@ -142,7 +144,7 @@ public class ScannerService {
 
     private void generateLog() {
         try {
-            bandscanService.addEntry(statusHandler.getCurrentFrequency(), rdsHandler.getPi(), rdsHandler.getPs(), Math.round(statusHandler.getSignalStrength()));
+            bandscanRepository.addEntry(statusHandler.getCurrentFrequency(), rdsHandler.getPi(), rdsHandler.getPs(), Math.round(statusHandler.getSignalStrength()));
             rdsHandler.reset();
             statusHandler.reset();
             statusHistory.reset();
