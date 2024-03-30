@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+>
+<head>
+    <meta charset="UTF-8">
+    <title>Thymeleaf Hello World Example</title>
+    <script src="http://localhost:6686/livereload.js"></script>
+    <script src=https://code.jquery.com/jquery-3.7.1.min.js></script>
+    <script src=https://cdn.datatables.net/2.0.3/js/dataTables.js></script>
+</head>
+<body>
+<h1>Bandscan</h1>
+
+
+<div id="status" th:replace="~{fragments :: status(${time},${freq},${pi},${ps},${signal},${bandwidth})}"></div>
+
+<hr>
+
+<table id="bandscan" class="display">
+    <thead>
+        <tr>
+            <th data-field="frequencyKHz">QRG</th>
+            <th data-field="rdsPI">PI</th>
+            <th data-field="rdsPS">PS</th>
+            <th data-field="quality">Quality</th>
+        </tr>
+    </thead>
+</table>
+
+
+<script>
+    function updateTime() {
+        $.get("/status").done(function (fragment) { // get from controller
+            $("#status").replaceWith(fragment); // update snippet of page
+        });
+    }
+    var interval = setInterval(updateTime, 100);
+
+    $(document).ready( function () {
+        var table = $('#bandscan').DataTable( {
+            paging: false,
+            ajax: {
+                url: '/bandscan',
+                dataSrc: 'data'
+            },
+            columns: [
+                { data: 'frequencyKHz'},
+                { data: 'rdsPI'},
+                { data: 'rdsPS'},
+                { data: 'quality'}
+            ]
+        });
+        setInterval(function () {
+            table.ajax.reload();
+        }, 30000);
+    } );
+
+
+</script>
+</body>
+</html>

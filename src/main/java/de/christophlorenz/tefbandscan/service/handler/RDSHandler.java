@@ -57,4 +57,8 @@ public class RDSHandler {
     private int calculateGroupType(String rdsB) {
         return Integer.parseInt(rdsB.substring(0, 1), 16);
     }
+
+    public String getPs() {
+        return ps.getPs();
+    }
 }

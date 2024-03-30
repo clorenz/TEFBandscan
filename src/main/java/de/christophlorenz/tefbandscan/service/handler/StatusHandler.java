@@ -56,4 +56,16 @@ public class StatusHandler {
                 ", bandwidth=" + bandwidth +
                 '}';
     }
+
+    public Integer getCurrentFrequency() {
+        return frequencyKhz;
+    }
+
+    public Float getSignalStrength() {
+        return signalStrength;
+    }
+
+    public Integer getBandwidth() {
+        return bandwidth;
+    }
 }

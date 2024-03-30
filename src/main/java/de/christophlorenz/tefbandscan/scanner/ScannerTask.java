@@ -41,7 +41,7 @@ public class ScannerTask implements Runnable {
         boolean interrupted=false;
         while ( !interrupted ) {
             try {
-                service.scan();
+                service.scan(false);
                 Thread.sleep(1);
             } catch (InterruptedException e) {
                 interrupted=true;
