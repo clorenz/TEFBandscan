@@ -18,7 +18,10 @@ public class StatusHandler {
         String statusContents = line.substring(1);
 
         stereo = extractStereoFlag(statusContents);
-        signalStrength = extractSignalStrength(statusContents) -11.25f + 0.35f;     // don't know, wny...
+        signalStrength = extractSignalStrength(statusContents);
+        if (signalStrength != null ) {
+            signalStrength = signalStrength -11.25f + 0.35f;     // don't know, wny...
+        }
         bandwidth = extractBandwidth(statusContents);
     }
 
@@ -30,14 +33,23 @@ public class StatusHandler {
         return "s".equalsIgnoreCase(statusContents.substring(0, 1));
     }
 
-    private float extractSignalStrength(String statusContents) {
+    private Float extractSignalStrength(String statusContents) {
         String[] dataParts = statusContents.substring(1).split(",");
-        return Float.parseFloat(dataParts[0]);
+        try {
+            return Float.parseFloat(dataParts[0]);
+        } catch (Exception e) {
+            LOGGER.error("Got invalid status contents='" + statusContents + "': "+ e);
+        }
+        return null;
     }
 
-    private int extractBandwidth(String statusContents) {
+    private Integer extractBandwidth(String statusContents) {
         String[] dataParts = statusContents.substring(1).split(",");
-        return Integer.parseInt(dataParts[3]);
+        if (dataParts.length > 2) {
+            return Integer.parseInt(dataParts[3]);
+        } else {
+            return null;
+        }
     }
 
     public void reset() {

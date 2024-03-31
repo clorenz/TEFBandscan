@@ -49,7 +49,7 @@ public class RDSHandler {
     @Override
     public String toString() {
         return "RDSHandler{" +
-                "PI='" + pi + '\'' +
+                "PI='" + (pi != null ? pi : "") + '\'' +
                 ",PS='" + ps.getPs() + '\'' +
                 '}';
     }

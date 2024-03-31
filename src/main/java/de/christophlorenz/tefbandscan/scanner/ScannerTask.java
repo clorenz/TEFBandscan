@@ -1,8 +1,6 @@
 package de.christophlorenz.tefbandscan.scanner;
 
-import de.christophlorenz.tefbandscan.repository.CommunicationRepository;
-import de.christophlorenz.tefbandscan.repository.RepositoryException;
-import de.christophlorenz.tefbandscan.repository.TCPCommunicationRepository;
+import de.christophlorenz.tefbandscan.repository.*;
 import de.christophlorenz.tefbandscan.service.ScannerService;
 import de.christophlorenz.tefbandscan.service.ServiceException;
 import org.slf4j.Logger;
@@ -10,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.stereotype.Component;
+import sun.misc.Signal;
 
 import java.util.List;
 
@@ -19,12 +18,15 @@ public class ScannerTask implements Runnable {
     private static final Logger LOGGER = LoggerFactory.getLogger(ScannerTask.class);
 
     private final TCPCommunicationRepository tcpRepository;
+    private final CSVRepository csvRepository;
 
-    public ScannerTask(TCPCommunicationRepository tcpRepository) {
+    public ScannerTask(CSVRepository csvRepository, TCPCommunicationRepository tcpRepository) {
+        this.csvRepository = csvRepository;
         this.tcpRepository = tcpRepository;
     }
 
     private CommunicationRepository communicationRepository;
+    private BandscanRepository bandscanRepository;
     @Autowired
     private ScannerService service;
 
@@ -38,16 +40,22 @@ public class ScannerTask implements Runnable {
         if (databaseNames != null && databaseNames.isEmpty()) {
             database = databaseNames.get(0);
         }
-
-        LOGGER.info("Using SQLite database=" + database);
+        bandscanRepository = csvRepository;
+        try {
+            bandscanRepository.init(database);
+        } catch (RepositoryException e) {
+            System.err.println("Cannot work with CSV based database: " + e.getMessage());
+            Runtime.getRuntime().halt(1);
+        }
 
         communicationRepository = tcpRepository;
         try {
             communicationRepository.initialize();
             service.setCommunicationRepository(communicationRepository);
+            service.setBandscanRepository(bandscanRepository);
         } catch (RepositoryException e) {
             System.err.println("Cannot connect to TEF6686: " + e.getMessage());
-            Runtime.getRuntime().halt(1);
+            Runtime.getRuntime().halt(2);
         }
 
         boolean interrupted=false;

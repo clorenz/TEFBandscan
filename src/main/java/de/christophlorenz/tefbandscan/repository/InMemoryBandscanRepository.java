@@ -14,7 +14,12 @@ public class InMemoryBandscanRepository implements BandscanRepository {
     private Bandscan bandscan;
 
     public InMemoryBandscanRepository() {
-        bandscan = new Bandscan(new ArrayList<>());
+        bandscan = new Bandscan();
+    }
+
+    @Override
+    public void init(String name) {
+        // do nothing
     }
 
     @Override

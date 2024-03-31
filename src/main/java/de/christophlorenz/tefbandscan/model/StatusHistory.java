@@ -33,23 +33,27 @@ public class StatusHistory {
             return false;
         }
 
+
+        /*
         Pair<Float,Float> bandwidth =
                 calculateMeanAndStandardDeviation(Arrays.stream(statuses).map(Status::bandwidth)
                         .filter(Objects::nonNull)
+                        .filter(b -> b>150)
                         .map(Float::valueOf)
                         .toArray(Float[]::new));
+
+         */
 
         Pair<Float,Float> signal =
                 calculateMeanAndStandardDeviation(Arrays.stream(statuses).map(Status::signal)
                         .filter(Objects::nonNull)
                         .toArray(Float[]::new));
 
-        return (bandwidth.getRight() < 0.1) && (signal.getRight() < 2.0);
+        return /*(bandwidth.getRight() < 0.1) &&*/ (signal.getRight() < 2.0);
     }
 
 
     private static Pair<Float,Float> calculateMeanAndStandardDeviation(Float[] array) {
-
         // get the sum of array
         int length = 0;
         float sum = 0.0f;
@@ -58,6 +62,10 @@ public class StatusHistory {
                 sum += i;
                 length++;
             }
+        }
+
+        if (length==0) {
+            return Pair.of(0f,0f);
         }
 
         // get the mean of array
