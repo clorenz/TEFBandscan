@@ -16,33 +16,34 @@ public record Bandscan(List<BandscanEntry> bandscanEntries) {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Bandscan.class);
 
-    private static Set<PrimaryKey> primaryKeys = new HashSet<>();
     public Bandscan() {
         this(new ArrayList<>());
     }
 
     public void addBandscanEntry(BandscanEntry bandscanEntry) {
-        PrimaryKey primaryKey = new PrimaryKey(bandscanEntry.frequencyKHz(), bandscanEntry.rdsPi());
-        if (!primaryKeys.contains(primaryKey)) {
+        String primaryKey = bandscanEntry.getPrimaryKey();
+        if (!containsPrimaryKey(primaryKey)) {
             bandscanEntries.add(bandscanEntry);
-            primaryKeys.add(primaryKey);
         } else {
             // Remove existing entry and add new
             BandscanEntry entryToRemove = bandscanEntries().stream()
-                    .filter(e -> (
-                                    NumberUtils.compare(bandscanEntry.getFrequencyKHz(), e.getFrequencyKHz()) == 0)
-                            && (StringUtils.compare(bandscanEntry.rdsPi(), e.getRdsPi()) == 0)
-                    ).findFirst()
+                    .filter(e -> e.getPrimaryKey().equals(primaryKey)).findFirst()
                     .orElse(null);
             if (entryToRemove != null) {
                 bandscanEntries.remove(entryToRemove);
-                LOGGER.info("Removed obsolete entry=" + entryToRemove);
             }
             bandscanEntries.add(bandscanEntry);
-            LOGGER.info("Updated entry=" + bandscanEntry);
         }
     }
 
+    private boolean containsPrimaryKey(String primaryKey) {
+        for (BandscanEntry entry: bandscanEntries) {
+            if (primaryKey.equals(entry.getPrimaryKey())) {
+                return true;
+            }
+        }
+        return false;
+    }
 
-    public record PrimaryKey(Integer frequencyKHz, String pi) {}
+
 }

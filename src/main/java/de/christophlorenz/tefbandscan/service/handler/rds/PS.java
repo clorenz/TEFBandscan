@@ -13,7 +13,6 @@ public class PS extends AbstractRdsHandler {
 
     public void calculatePS(String rdsB, String rdsD) {
         int rdsBValue = Integer.parseInt(rdsB, 16);
-        boolean isBlockA = calculateIsBlockA(rdsB);
         int position = rdsBValue % 4;
         char char1 = (char) Integer.parseInt(rdsD.substring(0,2), 16);
         char char2 = (char) Integer.parseInt(rdsD.substring(2,4), 16);

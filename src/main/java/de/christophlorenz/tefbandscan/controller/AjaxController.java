@@ -3,9 +3,10 @@ package de.christophlorenz.tefbandscan.controller;
 import de.christophlorenz.tefbandscan.model.DataTableResponse;
 import de.christophlorenz.tefbandscan.model.Status;
 import de.christophlorenz.tefbandscan.repository.BandscanRepository;
-import de.christophlorenz.tefbandscan.repository.InMemoryBandscanRepository;
+import de.christophlorenz.tefbandscan.service.ManualScannerService;
 import de.christophlorenz.tefbandscan.service.ScannerService;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,9 +18,10 @@ import java.util.Date;
 public class AjaxController {
 
     private final BandscanRepository bandscanRepository;
+    @Lazy
     private final ScannerService scannerService;
 
-    public AjaxController(@Qualifier("csv") BandscanRepository bandscanRepository, ScannerService scannerService) {
+    public AjaxController(@Qualifier("csv") BandscanRepository bandscanRepository, @Qualifier("currentScanner") ScannerService scannerService) {
         this.bandscanRepository = bandscanRepository;
         this.scannerService = scannerService;
     }
@@ -35,6 +37,7 @@ public class AjaxController {
             map.addAttribute("pi", status.rdsPi());
             map.addAttribute("ps", status.rdsPs());
             map.addAttribute("signal", status.signal() != null ? Math.round(status.signal()) : "");
+            map.addAttribute("cci", status.cci());
             map.addAttribute("bandwidth", status.bandwidth());
         } else {
             map.addAttribute("freq","---- (please select new frequency) ----");

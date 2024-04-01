@@ -1,7 +1,6 @@
 package de.christophlorenz.tefbandscan.controller;
 
 import de.christophlorenz.tefbandscan.repository.BandscanRepository;
-import de.christophlorenz.tefbandscan.repository.InMemoryBandscanRepository;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;

@@ -83,4 +83,21 @@ public class StatusHistory {
     public boolean hasEnoughData() {
         return statuspoints >= EVALUATION_LENGTH;
     }
+
+    public Float getAverageSignal() {
+        Pair<Float,Float> signal =
+                calculateMeanAndStandardDeviation(Arrays.stream(statuses).map(Status::signal)
+                        .filter(Objects::nonNull)
+                        .toArray(Float[]::new));
+        return signal.getLeft();
+    }
+
+    public int getAverageGGI() {
+        Pair<Float, Float> cci =
+                calculateMeanAndStandardDeviation(Arrays.stream(statuses).map(Status::cci)
+                        .map(Integer::floatValue)
+                        .filter(Objects::nonNull)
+                        .toArray(Float[]::new));
+        return cci.getLeft().intValue();
+    }
 }

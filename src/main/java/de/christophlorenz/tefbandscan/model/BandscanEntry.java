@@ -13,17 +13,18 @@ public class BandscanEntry implements Comparable<BandscanEntry>{
     private Integer frequencyKHz;
     private String rdsPi;
     private String rdsPs;
-    private int quality;
+    private int signalStrength;
+    private int cci;
     private LocalDateTime timestamp;
 
     public BandscanEntry() {
     }
 
-    public BandscanEntry(Integer frequencyKHz, String rdsPI, String rdsPS, Integer quality) {
-        this(frequencyKHz, rdsPI, rdsPS, quality, LocalDateTime.now());
+    public BandscanEntry(Integer frequencyKHz, String rdsPI, String rdsPS, Integer signalStrength, Integer cci) {
+        this(frequencyKHz, rdsPI, rdsPS, signalStrength, cci, LocalDateTime.now());
     }
 
-    public BandscanEntry(int frequencyKHz, String rdsPI, String rdsPS, int quality, LocalDateTime timestamp) {
+    public BandscanEntry(int frequencyKHz, String rdsPI, String rdsPS, int signalStrength, int cci, LocalDateTime timestamp) {
         this.frequencyKHz= frequencyKHz;
         this.rdsPi= rdsPI;
         if (rdsPi != null && rdsPi.isBlank()) {
@@ -33,7 +34,8 @@ public class BandscanEntry implements Comparable<BandscanEntry>{
         if (rdsPs != null && rdsPs.isBlank()) {
             rdsPs = null;
         }
-        this.quality = quality;
+        this.signalStrength = signalStrength;
+        this.cci = cci;
         this.timestamp = timestamp;
     }
 
@@ -61,12 +63,20 @@ public class BandscanEntry implements Comparable<BandscanEntry>{
         this.rdsPs = rdsPs;
     }
 
-    public int getQuality() {
-        return quality;
+    public int getSignalStrength() {
+        return signalStrength;
     }
 
-    public void setQuality(int quality) {
-        this.quality = quality;
+    public void setSignalStrength(int signalStrength) {
+        this.signalStrength = signalStrength;
+    }
+
+    public int getCci() {
+        return cci;
+    }
+
+    public void setCci(int cci) {
+        this.cci = cci;
     }
 
     public Integer frequencyKHz() {
@@ -81,12 +91,12 @@ public class BandscanEntry implements Comparable<BandscanEntry>{
         return rdsPs;
     }
 
-    public int quality() {
-        return quality;
-    }
-
     public LocalDateTime getTimestamp() {
         return timestamp;
+    }
+
+    public String getPrimaryKey() {
+        return frequencyKHz + "|" + rdsPi;
     }
 
     @Override
@@ -94,12 +104,12 @@ public class BandscanEntry implements Comparable<BandscanEntry>{
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         BandscanEntry that = (BandscanEntry) o;
-        return quality == that.quality && Objects.equals(frequencyKHz, that.frequencyKHz) && Objects.equals(rdsPi, that.rdsPi) && Objects.equals(rdsPs, that.rdsPs) && Objects.equals(timestamp, that.timestamp);
+        return signalStrength == that.signalStrength && cci == that.cci && Objects.equals(frequencyKHz, that.frequencyKHz) && Objects.equals(rdsPi, that.rdsPi) && Objects.equals(rdsPs, that.rdsPs) && Objects.equals(timestamp, that.timestamp);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(frequencyKHz, rdsPi, rdsPs, quality, timestamp);
+        return Objects.hash(frequencyKHz, rdsPi, rdsPs, signalStrength, cci, timestamp);
     }
 
     @Override
@@ -108,19 +118,14 @@ public class BandscanEntry implements Comparable<BandscanEntry>{
                 "frequencyKHz=" + frequencyKHz +
                 ", rdsPi='" + rdsPi + '\'' +
                 ", rdsPs='" + rdsPs + '\'' +
-                ", quality=" + quality +
+                ", signalStrength=" + signalStrength +
+                ", cci=" + cci +
                 ", timestamp=" + timestamp +
                 '}';
     }
 
     @Override
-    public int compareTo(BandscanEntry bandscanEntry) {
-        if (bandscanEntry==null || bandscanEntry.getFrequencyKHz()==null) {
-            return 1;
-        }
-        if (bandscanEntry.getFrequencyKHz().equals(frequencyKHz)) {
-            return StringUtils.compare(rdsPi, bandscanEntry.getRdsPi());
-        }
-        return NumberUtils.compare(frequencyKHz, bandscanEntry.getFrequencyKHz());
+    public int compareTo(BandscanEntry other) {
+        return StringUtils.compare(getPrimaryKey(), other.getPrimaryKey());
     }
 }

@@ -3,8 +3,9 @@
     <div style="font-size: x-large; font-family: Monospaced;">
         <span id="freq" th:text="${freq}">87.5 MHz</span> &nbsp;
         <span id="pi" th:text="${pi}"></span> &nbsp;
-        <span id="ps" th:text="${ps}"></span> &nbsp;
+        <span id="ps" th:text="${#strings.replace(ps,' ','_')}"></span> &nbsp;
         <span id="signal" th:text="${signal + 'dBµV'}"></span> &nbsp;
+        <span id="cci" th:text="${cci + '%'}"></span> &nbsp;
         <span id="bandwidth" th:text="${bandwidth + 'kHz'}"></span>
     </div>
 </div>

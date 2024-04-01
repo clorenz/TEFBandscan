@@ -8,7 +8,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Reader;
@@ -18,9 +17,7 @@ import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Format: comma-separated entries, wrapped in parentheses
@@ -31,17 +28,18 @@ import java.util.stream.Collectors;
  *     <li>QRG</li>
  *     <li>RDS-PI</li>
  *     <li>RDS-PS</li>
- *     <li>Quality</li>
+ *     <li>signal strength in dbµV</li>
+ *     <li>CCI in percent</li>
  *     <li>Timestamp of log (ISO 8601 format)</li>
  * </ul>
  */
 
 @Repository("csv")
-public class CSVRepository implements BandscanRepository {
+public class CSVBandscanRepository implements BandscanRepository {
 
     private Bandscan bandscan;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CSVRepository.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CSVBandscanRepository.class);
     private Path path;
 
     @Override
@@ -52,11 +50,11 @@ public class CSVRepository implements BandscanRepository {
     }
 
     @Override
-    public void addEntry(Integer frequencyKHz, String rdsPI, String rdsPS, Integer quality) throws RepositoryException {
+    public void addEntry(Integer frequencyKHz, String rdsPI, String rdsPS, Integer signalStrength, Integer cci) throws RepositoryException {
         if (frequencyKHz == null) {
             return;
         }
-        BandscanEntry bandscanEntry = new BandscanEntry(frequencyKHz, rdsPI, rdsPS, quality);
+        BandscanEntry bandscanEntry = new BandscanEntry(frequencyKHz, rdsPI, rdsPS, signalStrength, cci);
         bandscan.addBandscanEntry(bandscanEntry);
         writeAll(bandscan);
     }
@@ -84,9 +82,10 @@ public class CSVRepository implements BandscanRepository {
                             if (rdsPs != null && rdsPs.isBlank()) {
                                 rdsPs = null;
                             }
-                            int quality = Integer.parseInt(columns[3]);
-                            LocalDateTime timestamp = LocalDateTime.parse(columns[4], DateTimeFormatter.ISO_DATE_TIME);
-                            BandscanEntry bandscanEntry = new BandscanEntry(qrg, rdsPi, rdsPs, quality, timestamp);
+                            int signalStrength = Integer.parseInt(columns[3]);
+                            int cci = Integer.parseInt(columns[4]);
+                            LocalDateTime timestamp = LocalDateTime.parse(columns[5], DateTimeFormatter.ISO_DATE_TIME);
+                            BandscanEntry bandscanEntry = new BandscanEntry(qrg, rdsPi, rdsPs, signalStrength, cci, timestamp);
                             bandscan.addBandscanEntry(bandscanEntry);
                         }
                 );
@@ -103,7 +102,7 @@ public class CSVRepository implements BandscanRepository {
     private void writeAll(Bandscan bandscan) throws RepositoryException {
         try(CSVWriter writer = new CSVWriter(new FileWriter(path.toString()))) {
             List<String[]> data = new ArrayList<>();
-            data.add(new String[]{"QRG","PI","PS","Q","Timestamp"});
+            data.add(new String[]{"QRG","PI","PS","Signal","CCI","Timestamp"});
             bandscan.bandscanEntries().stream()
                     .sorted()
                             .forEach(
@@ -123,6 +122,8 @@ public class CSVRepository implements BandscanRepository {
         return new String[]{e.getFrequencyKHz().toString(),
                 e.getRdsPi(),
                 e.rdsPs(),
-                String.valueOf(e.getQuality()), DateTimeFormatter.ISO_DATE_TIME.format(e.getTimestamp())};
+                String.valueOf(e.getSignalStrength()),
+                String.valueOf(e.getCci()),
+                DateTimeFormatter.ISO_DATE_TIME.format(e.getTimestamp())};
     }
 }
