@@ -1,16 +1,10 @@
 package de.christophlorenz.tefbandscan.model;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.math.NumberUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 public record Bandscan(List<BandscanEntry> bandscanEntries) {
 
@@ -31,6 +25,7 @@ public record Bandscan(List<BandscanEntry> bandscanEntries) {
                     .orElse(null);
             if (entryToRemove != null) {
                 bandscanEntries.remove(entryToRemove);
+                LOGGER.info("Removed bandscanEntry for primaryKey=" + primaryKey + ": " + entryToRemove);
             }
             bandscanEntries.add(bandscanEntry);
         }

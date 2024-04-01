@@ -1,7 +1,6 @@
 package de.christophlorenz.tefbandscan.scanner;
 
 import jakarta.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;

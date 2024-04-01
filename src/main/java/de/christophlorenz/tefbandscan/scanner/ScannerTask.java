@@ -1,16 +1,14 @@
 package de.christophlorenz.tefbandscan.scanner;
 
-import de.christophlorenz.tefbandscan.repository.*;
+import de.christophlorenz.tefbandscan.repository.BandscanRepository;
+import de.christophlorenz.tefbandscan.repository.CSVBandscanRepository;
+import de.christophlorenz.tefbandscan.repository.CommunicationRepository;
 import de.christophlorenz.tefbandscan.service.ScannerService;
 import de.christophlorenz.tefbandscan.service.ServiceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.ApplicationArguments;
 import org.springframework.stereotype.Component;
-
-import java.util.List;
 
 @Component
 public class ScannerTask implements Runnable {

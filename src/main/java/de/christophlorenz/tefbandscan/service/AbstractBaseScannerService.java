@@ -1,8 +1,10 @@
 package de.christophlorenz.tefbandscan.service;
 
+import de.christophlorenz.tefbandscan.model.Status;
 import de.christophlorenz.tefbandscan.model.StatusHistory;
 import de.christophlorenz.tefbandscan.repository.BandscanRepository;
 import de.christophlorenz.tefbandscan.repository.CommunicationRepository;
+import de.christophlorenz.tefbandscan.service.handler.LineHandler;
 import de.christophlorenz.tefbandscan.service.handler.RDSHandler;
 import de.christophlorenz.tefbandscan.service.handler.StatusHandler;
 import org.slf4j.Logger;
@@ -14,6 +16,7 @@ public abstract class AbstractBaseScannerService implements ScannerService {
 
     protected final BandscanRepository bandscanRepository;
     protected final CommunicationRepository communicationRepository;
+    protected final LineHandler lineHandler;
     protected final RDSHandler rdsHandler;
     protected final StatusHandler statusHandler;
 
@@ -21,10 +24,12 @@ public abstract class AbstractBaseScannerService implements ScannerService {
 
     public AbstractBaseScannerService(BandscanRepository bandscanRepository,
                                       CommunicationRepository communicationRepository,
+                                      LineHandler lineHandler,
                                       RDSHandler rdsHandler,
                                       StatusHandler statusHandler) {
         this.bandscanRepository = bandscanRepository;
         this.communicationRepository = communicationRepository;
+        this.lineHandler = lineHandler;
         this.rdsHandler = rdsHandler;
         this.statusHandler = statusHandler;
         statusHistory = new StatusHistory();
@@ -69,6 +74,11 @@ public abstract class AbstractBaseScannerService implements ScannerService {
         } catch (Exception e) {
             throw new ServiceException("Cannot generate log: " + e, e);
         }
+    }
+
+    @Override
+    public Status getCurrentStatus() {
+        return new Status(statusHandler.getCurrentFrequency(), rdsHandler.getPi(), rdsHandler.getPs(), statusHandler.getSignalStrength(), statusHandler.getCci(), statusHandler.getBandwidth());
     }
 
     protected static Logger getLogger() {

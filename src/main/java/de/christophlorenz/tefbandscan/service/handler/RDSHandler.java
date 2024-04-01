@@ -73,8 +73,8 @@ public class RDSHandler {
         return Integer.parseInt(rdsB.substring(0, 1), 16);
     }
 
-    private int calculateVersion(String rdsB) {
-        return Integer.parseInt(rdsB.substring(1, 2), 16) >> 8;
+    protected int calculateVersion(String rdsB) {
+        return (Integer.parseInt(rdsB, 16) >> 12) % 2;
     }
 
     public String getPs() {

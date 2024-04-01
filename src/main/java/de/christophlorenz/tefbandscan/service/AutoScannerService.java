@@ -1,7 +1,6 @@
 package de.christophlorenz.tefbandscan.service;
 
 import de.christophlorenz.tefbandscan.model.Status;
-import de.christophlorenz.tefbandscan.model.StatusHistory;
 import de.christophlorenz.tefbandscan.repository.BandscanRepository;
 import de.christophlorenz.tefbandscan.repository.CommunicationRepository;
 import de.christophlorenz.tefbandscan.repository.RepositoryException;
@@ -21,8 +20,6 @@ public class AutoScannerService extends AbstractBaseScannerService implements Sc
     private static final long TIMEOUT_MILLIS = 30000;// 30 seconds
     private static final int BAND_END=108000;
 
-    private final LineHandler lineHandler;
-
     private Status currentStatus;
     private long lastFrequencyChangeTime=0;
 
@@ -32,14 +29,8 @@ public class AutoScannerService extends AbstractBaseScannerService implements Sc
             RDSHandler rdsHandler,
             StatusHandler statusHandler,
             LineHandler lineHandler) {
-        super(bandscanRepository, communicationRepository, rdsHandler, statusHandler);
-        this.lineHandler = lineHandler;
+        super(bandscanRepository, communicationRepository, lineHandler, rdsHandler, statusHandler);
         lineHandler.setScannerService(this);
-    }
-
-    @Override
-    public Status getCurrentStatus() {
-        return new Status(statusHandler.getCurrentFrequency(), rdsHandler.getPi(), rdsHandler.getPs(), statusHandler.getSignalStrength(), statusHandler.getCci(), statusHandler.getBandwidth());
     }
 
     @Override

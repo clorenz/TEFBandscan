@@ -36,7 +36,12 @@ public class StatusHandler {
     private Float extractSignalStrength(String statusContents) {
         String[] dataParts = statusContents.split(",");
         try {
-            return Float.parseFloat(dataParts[0]);
+            String statusSignalPart = dataParts[0];
+            if (statusSignalPart.startsWith("-")) {
+                return 0f;
+            } else {
+                return Float.parseFloat(statusSignalPart);
+            }
         } catch (Exception e) {
             LOGGER.error("Got invalid status contents for signalStength='" + statusContents + "': "+ e);
         }

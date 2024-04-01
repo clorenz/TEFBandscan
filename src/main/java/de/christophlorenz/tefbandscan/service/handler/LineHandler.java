@@ -1,8 +1,6 @@
 package de.christophlorenz.tefbandscan.service.handler;
 
-import de.christophlorenz.tefbandscan.repository.RepositoryException;
 import de.christophlorenz.tefbandscan.service.ScannerService;
-import de.christophlorenz.tefbandscan.service.ServiceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -18,9 +16,19 @@ public class LineHandler {
         this.scannerService = scannerService;
     }
 
+    private boolean ignoreNextLine=false;
+
     public void handle(String line) {
-        if (line==null || line.isBlank()) {
+        if (ignoreNextLine) {
+            ignoreNextLine=false;
             return;
+        }
+        if (line==null || line.isBlank() || "OK".equalsIgnoreCase(line)) {
+            return;
+        }
+
+        if (!line.matches("^\\D.*$")) {
+            LOGGER.warn("Invalid line=" + line);
         }
 
         String action = line.substring(0,1).toUpperCase();
@@ -28,7 +36,7 @@ public class LineHandler {
         switch(action) {
             case "0" -> {
                 if (!"OK".equalsIgnoreCase(data)) {
-                    scannerService.handleStatus(data);
+                    scannerService.handleStatus(data.substring(1));
                 } else {
                     LOGGER.info("Received OK");
                 }
@@ -36,17 +44,34 @@ public class LineHandler {
             case "B" -> LOGGER.info("Stereo toggle=" + data);
             case "M" -> {
                 if (!"0".equals(data)) {
+                    LOGGER.info("M: Handle frequency changed for data=" + data);
                     scannerService.handleFrequencyChange();
                     scannerService.setFrequency(data);
                 }
             }
             case "P" -> scannerService.handlePI(data);
-            case "Q" -> LOGGER.info("Got Squelch confirmation=" + line);
+            case "Q" -> {
+                LOGGER.info("Got Squelch confirmation=" + line);
+                // BUG in TEF6686_ESP32 firnware: If data is not equal to " - 1", then
+                // it is appended WITHOUT(!) newline in the next line, meaning, that the
+                // next line is garbage only!
+                if (!data.equals(" - 1")) {
+                    ignoreNextLine=true;
+                }
+            }
             case "R" -> scannerService.handleRDSData(data);
             case "S" -> scannerService.handleStatus(data);
             case "T" -> {
+                String safeData = data.replaceFirst("\\D+.*$","");
+                int frequencyKhz = Integer.parseInt(safeData);     // Bug: Sometimes, garbage is appended
+                if (frequencyKhz < 65000) {
+                    LOGGER.info("Detected invalid frequency=" + frequencyKhz + ". Correcting to " + data + "0");
+                    scannerService.setFrequency(data + "0");        // Bug: Last zero is missing
+                    break;
+                }
+                LOGGER.info("T: Handle frequency changed for data=" + safeData);
                 scannerService.handleFrequencyChange();
-                scannerService.setFrequency(data);
+                scannerService.setFrequency(safeData);
             }
             default -> LOGGER.warn("Unknown action=" + action + " for line=" + line);
         }
