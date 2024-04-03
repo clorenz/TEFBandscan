@@ -81,7 +81,11 @@ public class TCPCommunicationRepository implements CommunicationRepository {
     @Override
     public String read() throws RepositoryException {
         try {
-            return reader.readLine();
+            String line = reader.readLine();
+            if (line != null && !line.isBlank()) {
+                LOGGER.debug("<" + line);
+            }
+            return line;
         } catch (IOException e) {
             throw new RepositoryException("Cannot read: " + e, e);
         }
@@ -90,6 +94,7 @@ public class TCPCommunicationRepository implements CommunicationRepository {
     @Override
     public void write(String data) throws RepositoryException {
         writer.println(data);
+        LOGGER.debug(">" + data);
     }
 
     private void authenticate(String password) throws IOException, NoSuchAlgorithmException {

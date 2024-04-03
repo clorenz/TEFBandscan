@@ -24,6 +24,11 @@ public record Bandscan(List<BandscanEntry> bandscanEntries) {
                     .filter(e -> e.getPrimaryKey().equals(primaryKey)).findFirst()
                     .orElse(null);
             if (entryToRemove != null) {
+                String ps = entryToRemove.getRdsPs();
+                if (ps!=null && (bandscanEntry.getRdsPs()==null || bandscanEntry.getRdsPs().isBlank())) {
+                    bandscanEntry.setRdsPs(ps);
+                    LOGGER.info("Keeping existing PS=" + ps + " for " + bandscanEntry.getPrimaryKey());
+                }
                 bandscanEntries.remove(entryToRemove);
                 LOGGER.info("Removed bandscanEntry for primaryKey=" + primaryKey + ": " + entryToRemove);
             }

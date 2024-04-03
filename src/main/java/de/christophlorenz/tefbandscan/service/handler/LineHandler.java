@@ -17,6 +17,7 @@ public class LineHandler {
     }
 
     private boolean ignoreNextLine=false;
+    private int lastFrequencyKhz=0;
 
     public void handle(String line) {
         if (ignoreNextLine) {
@@ -62,16 +63,13 @@ public class LineHandler {
             case "R" -> scannerService.handleRDSData(data);
             case "S" -> scannerService.handleStatus(data);
             case "T" -> {
-                String safeData = data.replaceFirst("\\D+.*$","");
-                int frequencyKhz = Integer.parseInt(safeData);     // Bug: Sometimes, garbage is appended
-                if (frequencyKhz < 65000) {
-                    LOGGER.info("Detected invalid frequency=" + frequencyKhz + ". Correcting to " + data + "0");
-                    scannerService.setFrequency(data + "0");        // Bug: Last zero is missing
-                    break;
-                }
-                LOGGER.info("T: Handle frequency changed for data=" + safeData);
-                scannerService.handleFrequencyChange();
-                scannerService.setFrequency(safeData);
+                int frequencyKhz = Integer.parseInt(data);
+                if (frequencyKhz != lastFrequencyKhz) {
+                    LOGGER.info("T: Handle frequency changed for data=" + data);
+                    scannerService.handleFrequencyChange();
+                    scannerService.setFrequency(data);
+                    lastFrequencyKhz = frequencyKhz;
+                };
             }
             default -> LOGGER.warn("Unknown action=" + action + " for line=" + line);
         }

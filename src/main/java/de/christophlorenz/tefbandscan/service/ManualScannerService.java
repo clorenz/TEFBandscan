@@ -59,9 +59,10 @@ public class ManualScannerService extends AbstractBaseScannerService implements 
 
     private void blinkOnDevice()   {
         try {
-            communicationRepository.write("Q100");
-            communicationRepository.read();
-            communicationRepository.read();
+            //communicationRepository.write("Q100");
+            //communicationRepository.read();
+            //communicationRepository.read();
+            communicationRepository.write("L");
         } catch (RepositoryException e) {
             LOGGER.warn("Cannot blink on device: " + e);
         }
@@ -69,8 +70,8 @@ public class ManualScannerService extends AbstractBaseScannerService implements 
 
     private void unBlinkOnDevice() {
         try {
-            communicationRepository.write("Q0");
-            communicationRepository.read();
+            //communicationRepository.write("Q0");
+            //communicationRepository.read();
             communicationRepository.write("x");
             LOGGER.info("Unblinked");
         } catch (RepositoryException e) {
