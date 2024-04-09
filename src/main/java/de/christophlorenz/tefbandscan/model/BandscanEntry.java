@@ -46,7 +46,7 @@ public class BandscanEntry implements Comparable<BandscanEntry>{
     }
 
     public String getRdsPi() {
-        return rdsPi;
+        return (rdsPi == null || rdsPi.isBlank()) ? null : rdsPi;
     }
 
     public void setRdsPi(String rdsPi) {
@@ -54,7 +54,7 @@ public class BandscanEntry implements Comparable<BandscanEntry>{
     }
 
     public String getRdsPs() {
-        return rdsPs;
+        return (rdsPs == null || rdsPs.isBlank()) ? null : rdsPs;
     }
 
     public void setRdsPs(String rdsPs) {

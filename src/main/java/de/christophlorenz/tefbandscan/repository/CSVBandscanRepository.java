@@ -50,18 +50,31 @@ public class CSVBandscanRepository implements BandscanRepository {
     }
 
     @Override
-    public void addEntry(Integer frequencyKHz, String rdsPI, String rdsPS, Integer signalStrength, Integer cci) throws RepositoryException {
+    public boolean addEntry(Integer frequencyKHz, String rdsPI, String rdsPS, Integer signalStrength, Integer cci) throws RepositoryException {
         if (frequencyKHz == null) {
-            return;
+            return false;
         }
         BandscanEntry bandscanEntry = new BandscanEntry(frequencyKHz, rdsPI, rdsPS, signalStrength, cci);
-        bandscan.addBandscanEntry(bandscanEntry);
+        return addEntry(bandscanEntry);
+    }
+
+
+    @Override
+    public boolean addEntry(BandscanEntry bandscanEntry) throws RepositoryException {
+        boolean isNewEntry = bandscan.addBandscanEntry(bandscanEntry);
         writeAll(bandscan);
+        return isNewEntry;
     }
 
     @Override
     public List<BandscanEntry> getEntries() {
         return bandscan.bandscanEntries();
+    }
+
+    @Override
+    public void removeEntry(BandscanEntry bandscanEntry) throws RepositoryException {
+        bandscan.removeBandscanEntry(bandscanEntry);
+        writeAll(bandscan);
     }
 
     private Bandscan readAll() throws RepositoryException {

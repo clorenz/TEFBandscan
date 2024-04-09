@@ -8,7 +8,11 @@ public interface BandscanRepository {
 
     public void init(String name) throws RepositoryException;
 
-    public void addEntry(Integer frequencyKHz, String rdsPI, String rdsPS, Integer quality, Integer CCI) throws RepositoryException;
+    public boolean addEntry(Integer frequencyKHz, String rdsPI, String rdsPS, Integer quality, Integer CCI) throws RepositoryException;
+
+    public boolean addEntry(BandscanEntry bandscanEntry) throws RepositoryException;
 
     public List<BandscanEntry> getEntries();
+
+    public void removeEntry(BandscanEntry latestLog) throws RepositoryException;
 }

@@ -26,7 +26,7 @@ public class RDSHandler {
     }
 
     public String getPi() {
-        return pi;
+        return (pi == null || pi.isBlank()) ? null : pi;
     }
 
     public void handleRDSData(String line) {

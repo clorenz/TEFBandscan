@@ -33,10 +33,10 @@ public class PS extends AbstractRdsHandler {
                 ret.append(ps[i]);
             }
         }
-        if (ret.length()==8) {
+        if (ret.length()==8 && !ret.toString().isBlank()) {
             return ret.toString();
         }
 
-        return "";
+        return null;
     }
 }

@@ -1,5 +1,6 @@
 package de.christophlorenz.tefbandscan.service;
 
+import de.christophlorenz.tefbandscan.model.BandscanEntry;
 import de.christophlorenz.tefbandscan.model.Status;
 import de.christophlorenz.tefbandscan.model.StatusHistory;
 import de.christophlorenz.tefbandscan.repository.BandscanRepository;
@@ -7,6 +8,7 @@ import de.christophlorenz.tefbandscan.repository.CommunicationRepository;
 import de.christophlorenz.tefbandscan.service.handler.LineHandler;
 import de.christophlorenz.tefbandscan.service.handler.RDSHandler;
 import de.christophlorenz.tefbandscan.service.handler.StatusHandler;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,12 +67,14 @@ public abstract class AbstractBaseScannerService implements ScannerService {
         statusHandler.handleFrequency(frequencyInKHz);
     }
 
-    public void generateLog() throws ServiceException {
+    public Pair<BandscanEntry,Boolean> generateLog() throws ServiceException {
         try {
-            bandscanRepository.addEntry(statusHandler.getCurrentFrequency(), rdsHandler.getPi(), rdsHandler.getPs(),
+            BandscanEntry bandscanEntry = new BandscanEntry(statusHandler.getCurrentFrequency(), rdsHandler.getPi(), rdsHandler.getPs(),
                     Math.round(statusHistory.getAverageSignal()),
                     statusHistory.getAverageGGI());
-            getLogger().info("Logged " + statusHandler.getCurrentFrequency() + "=" + rdsHandler);
+            boolean isNewEntry = bandscanRepository.addEntry(bandscanEntry);
+            getLogger().info("Logged " + statusHandler.getCurrentFrequency() + "=" + bandscanEntry);
+            return Pair.of(bandscanEntry, isNewEntry);
         } catch (Exception e) {
             throw new ServiceException("Cannot generate log: " + e, e);
         }
@@ -78,10 +82,23 @@ public abstract class AbstractBaseScannerService implements ScannerService {
 
     @Override
     public Status getCurrentStatus() {
-        return new Status(statusHandler.getCurrentFrequency(), rdsHandler.getPi(), rdsHandler.getPs(), statusHandler.getSignalStrength(), statusHandler.getCci(), statusHandler.getBandwidth());
+        return new Status(
+                statusHandler.getCurrentFrequency(),
+                rdsHandler.getPi(),
+                rdsHandler.getPs(),
+                statusHandler.getSignalStrength(),
+                statusHandler.getCci(),
+                statusHandler.getBandwidth());
     }
 
-    protected static Logger getLogger() {
+    protected int psLength(String ps) {
+        if (ps == null) {
+            return 0;
+        }
+        return ps.replaceAll("\\s","").length();
+    }
+
+    protected Logger getLogger() {
         return LOGGER;
     }
 }

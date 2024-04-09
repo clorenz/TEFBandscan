@@ -1,5 +1,7 @@
 package de.christophlorenz.tefbandscan.service;
 
+import de.christophlorenz.tefbandscan.model.Bandscan;
+import de.christophlorenz.tefbandscan.model.BandscanEntry;
 import de.christophlorenz.tefbandscan.model.Status;
 import de.christophlorenz.tefbandscan.repository.BandscanRepository;
 import de.christophlorenz.tefbandscan.repository.CommunicationRepository;
@@ -7,6 +9,7 @@ import de.christophlorenz.tefbandscan.repository.RepositoryException;
 import de.christophlorenz.tefbandscan.service.handler.LineHandler;
 import de.christophlorenz.tefbandscan.service.handler.RDSHandler;
 import de.christophlorenz.tefbandscan.service.handler.StatusHandler;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -28,6 +31,8 @@ public class ManualScannerService extends AbstractBaseScannerService implements 
     }
 
     boolean isLogged=false;
+    BandscanEntry latestLog = null;
+    boolean latestLogIsNewEntry = false;
 
     @Override
     public void scan() throws ServiceException {
@@ -35,11 +40,38 @@ public class ManualScannerService extends AbstractBaseScannerService implements 
         while (!interrupted) {
             try {
                 lineHandler.handle(communicationRepository.read());
-                statusHistory.setCurrentStatus(getCurrentStatus());
+                Status currentStatus = getCurrentStatus();
+                statusHistory.setCurrentStatus(currentStatus);
                 if ((!isLogged) && hasStabilized()) {
-                    generateLog();
+                    Pair<BandscanEntry, Boolean> logResult = generateLog();
+                    latestLog = logResult.getLeft();
+                    latestLogIsNewEntry = logResult.getRight();
                     isLogged=true;
                     blinkOnDevice();
+                } else if (isLogged) {
+                    // Let's see... Maybe we can improve the log...
+                    if ( (latestLog.getRdsPi() == null && currentStatus.rdsPi() != null) ||
+                            (latestLog.getRdsPi() != null && latestLog.getRdsPi().endsWith("?") && currentStatus.rdsPi() != null && !currentStatus.rdsPi().endsWith("?")))  {
+                        LOGGER.info("Logging again, since PI was detected. Before: " + latestLog.getRdsPi() + ", now: " + currentStatus.rdsPi());
+                        if (latestLogIsNewEntry) {
+                            // We can remove the previous entry
+                            bandscanRepository.removeEntry(latestLog);
+                            LOGGER.info("Removed obsolete entry=" + latestLog);
+                        }
+                        Pair<BandscanEntry, Boolean> logResult = generateLog();
+                        latestLog = logResult.getLeft();
+                        latestLogIsNewEntry = logResult.getRight();
+                        isLogged = true;
+                        blinkOnDevice();
+                    } else if ((latestLog.getRdsPs() == null && currentStatus.rdsPs() != null) ||
+                            (psLength(latestLog.getRdsPs()) < psLength(currentStatus.rdsPs())) ){
+                        LOGGER.info("Logging again, since PS was detected or improved. Before: " + latestLog.getRdsPs() + ", now: " + currentStatus.rdsPs());
+                        Pair<BandscanEntry, Boolean> logResult = generateLog();
+                        latestLog = logResult.getLeft();
+                        latestLogIsNewEntry = logResult.getRight();
+                        isLogged = true;
+                        blinkOnDevice();
+                    }
                 }
             } catch (RepositoryException e) {
                 LOGGER.error("Error: " + e, e);
@@ -81,5 +113,9 @@ public class ManualScannerService extends AbstractBaseScannerService implements 
 
     private boolean hasStabilized() {
         return (statusHandler.getCurrentFrequency() != null) && statusHistory.isStable();
+    }
+
+    protected Logger getLogger() {
+        return LOGGER;
     }
 }

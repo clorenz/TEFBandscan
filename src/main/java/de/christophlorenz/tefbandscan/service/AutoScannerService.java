@@ -87,5 +87,7 @@ public class AutoScannerService extends AbstractBaseScannerService implements Sc
         return (statusHandler.getCurrentFrequency() != null) && statusHistory.isStable();
     }
 
-
+    protected Logger getLogger() {
+        return LOGGER;
+    }
 }
