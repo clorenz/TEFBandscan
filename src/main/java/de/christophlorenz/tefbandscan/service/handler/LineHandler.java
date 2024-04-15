@@ -42,6 +42,10 @@ public class LineHandler {
                     LOGGER.info("Received OK");
                 }
             }
+            case "A" -> {
+                //throw new RuntimeException("Unauthenticated: " + line);
+                LOGGER.error("Unauthenticated: " + line);
+            }
             case "B" -> LOGGER.info("Stereo toggle=" + data);
             case "M" -> {
                 if (!"0".equals(data)) {

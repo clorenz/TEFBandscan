@@ -17,6 +17,7 @@ import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -30,6 +31,7 @@ import java.util.List;
  *     <li>RDS-PS</li>
  *     <li>signal strength in dbµV</li>
  *     <li>CCI in percent</li>
+ *     <li>SNR in dB</li>
  *     <li>Timestamp of log (ISO 8601 format)</li>
  * </ul>
  */
@@ -50,11 +52,11 @@ public class CSVBandscanRepository implements BandscanRepository {
     }
 
     @Override
-    public boolean addEntry(Integer frequencyKHz, String rdsPI, String rdsPS, Integer signalStrength, Integer cci) throws RepositoryException {
+    public boolean addEntry(Integer frequencyKHz, String rdsPI, String rdsPS, Integer signalStrength, Integer cci, Integer snr) throws RepositoryException {
         if (frequencyKHz == null) {
             return false;
         }
-        BandscanEntry bandscanEntry = new BandscanEntry(frequencyKHz, rdsPI, rdsPS, signalStrength, cci);
+        BandscanEntry bandscanEntry = new BandscanEntry(frequencyKHz, rdsPI, rdsPS, signalStrength, cci, snr);
         return addEntry(bandscanEntry);
     }
 
@@ -97,8 +99,15 @@ public class CSVBandscanRepository implements BandscanRepository {
                             }
                             int signalStrength = Integer.parseInt(columns[3]);
                             int cci = Integer.parseInt(columns[4]);
-                            LocalDateTime timestamp = LocalDateTime.parse(columns[5], DateTimeFormatter.ISO_DATE_TIME);
-                            BandscanEntry bandscanEntry = new BandscanEntry(qrg, rdsPi, rdsPs, signalStrength, cci, timestamp);
+                            Integer snr=null;
+                            LocalDateTime timestamp;
+                            if (columns.length>6) {
+                                snr = (columns[5] != null && !"null".equals(columns[5]) && !columns[5].isBlank()) ? Integer.parseInt(columns[5]) : null;
+                                timestamp = LocalDateTime.parse(columns[6], DateTimeFormatter.ISO_DATE_TIME);
+                            } else {
+                                timestamp = LocalDateTime.parse(columns[5], DateTimeFormatter.ISO_DATE_TIME);
+                            }
+                            BandscanEntry bandscanEntry = new BandscanEntry(qrg, rdsPi, rdsPs, signalStrength, cci, snr, timestamp);
                             bandscan.addBandscanEntry(bandscanEntry);
                         }
                 );
@@ -115,7 +124,7 @@ public class CSVBandscanRepository implements BandscanRepository {
     private void writeAll(Bandscan bandscan) throws RepositoryException {
         try(CSVWriter writer = new CSVWriter(new FileWriter(path.toString()))) {
             List<String[]> data = new ArrayList<>();
-            data.add(new String[]{"QRG","PI","PS","Signal","CCI","Timestamp"});
+            data.add(new String[]{"QRG","PI","PS","Signal","CCI","SNR","Timestamp"});
             bandscan.bandscanEntries().stream()
                     .sorted()
                             .forEach(
@@ -137,6 +146,7 @@ public class CSVBandscanRepository implements BandscanRepository {
                 e.rdsPs(),
                 String.valueOf(e.getSignalStrength()),
                 String.valueOf(e.getCci()),
+                e.getSnr() != null ? String.valueOf(e.getSnr()) : null,
                 DateTimeFormatter.ISO_DATE_TIME.format(e.getTimestamp())};
     }
 }

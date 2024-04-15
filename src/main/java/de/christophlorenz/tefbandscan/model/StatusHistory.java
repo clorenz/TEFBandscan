@@ -100,4 +100,13 @@ public class StatusHistory {
                         .toArray(Float[]::new));
         return cci.getLeft().intValue();
     }
+
+    public int getAverageSnr() {
+        Pair<Float,Float> snr =
+                calculateMeanAndStandardDeviation(Arrays.stream(statuses).map(Status::snr)
+                        .filter(Objects::nonNull)
+                        .map(Integer::floatValue)
+                        .toArray(Float[]::new));
+        return snr.getLeft().intValue();
+    }
 }

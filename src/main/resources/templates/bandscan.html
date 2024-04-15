@@ -4,20 +4,21 @@
 >
 <head>
     <meta charset="UTF-8">
-    <title>Thymeleaf Hello World Example</title>
+    <title>TEFBandscan</title>
     <script src="http://localhost:6686/livereload.js"></script>
     <script src=https://code.jquery.com/jquery-3.7.1.min.js></script>
     <script src=https://cdn.datatables.net/2.0.3/js/dataTables.js></script>
+    <link th:href="@{/css/main.css}" rel="stylesheet" />
 </head>
 <body>
 <h1>Bandscan</h1>
 
 
-<div id="status" th:replace="~{fragments :: status(${time},${freq},${pi},${ps},${signal},${bandwidth})}"></div>
+<div id="status" th:replace="~{fragments :: status(${time},${freq},${pi},${ps},${signal},${bandwidth},${snr})}"></div>
 
 <hr>
 
-<table id="bandscan" class="display" width="50%">
+<table id="bandscan" class="display bandscan" width="50%">
     <thead>
         <tr>
             <th data-field="frequencyKHz">QRG</th>
@@ -25,6 +26,7 @@
             <th data-field="rdsPS">PS</th>
             <th data-field="signalStrength">signal</th>
             <th data-field="cci">CCI</th>
+            <th data-field="snr">S/N</th>
         </tr>
     </thead>
 </table>
@@ -50,7 +52,8 @@
                 { data: 'rdsPi'},
                 { data: 'rdsPs'},
                 { data: 'signalStrength'},
-                { data: 'cci'}
+                { data: 'cci'},
+                { data: 'snr'}
             ]
         });
         setInterval(function () {

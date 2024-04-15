@@ -191,7 +191,7 @@ public class OldManualScannerService extends AbstractBaseScannerService implemen
         if (statusHistory.hasEnoughData()) {
             // Avoid logging during (fast) tuning
             try {
-                bandscanRepository.addEntry(statusHandler.getCurrentFrequency(), rdsHandler.getPi(), rdsHandler.getPs(), Math.round(statusHistory.getAverageSignal()), Math.round(statusHistory.getAverageGGI()));
+                bandscanRepository.addEntry(statusHandler.getCurrentFrequency(), rdsHandler.getPi(), rdsHandler.getPs(), Math.round(statusHistory.getAverageSignal()), Math.round(statusHistory.getAverageGGI()), null);
             } catch (RepositoryException e) {
                 LOGGER.error("Cannot make log entry: " + e, e);
             }
@@ -207,6 +207,6 @@ public class OldManualScannerService extends AbstractBaseScannerService implemen
 
 
     public Status getCurrentStatus() {
-        return new Status(statusHandler.getCurrentFrequency(), rdsHandler.getPi(), rdsHandler.getPs(), statusHandler.getSignalStrength(), statusHandler.getCci(), statusHandler.getBandwidth());
+        return new Status(statusHandler.getCurrentFrequency(), rdsHandler.getPi(), rdsHandler.getPs(), statusHandler.getSignalStrength(), statusHandler.getCci(), statusHandler.getBandwidth(), statusHandler.getSnr());
     }
 }

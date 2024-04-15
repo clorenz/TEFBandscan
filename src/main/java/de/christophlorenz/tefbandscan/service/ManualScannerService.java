@@ -2,6 +2,7 @@ package de.christophlorenz.tefbandscan.service;
 
 import de.christophlorenz.tefbandscan.model.Bandscan;
 import de.christophlorenz.tefbandscan.model.BandscanEntry;
+import de.christophlorenz.tefbandscan.model.Bandwidth;
 import de.christophlorenz.tefbandscan.model.Status;
 import de.christophlorenz.tefbandscan.repository.BandscanRepository;
 import de.christophlorenz.tefbandscan.repository.CommunicationRepository;
@@ -36,6 +37,9 @@ public class ManualScannerService extends AbstractBaseScannerService implements 
 
     @Override
     public void scan() throws ServiceException {
+        // Send bandwidth to 110kHz
+        setBandwidth(Bandwidth.BANDWIDTH_114);
+
         boolean interrupted=false;
         while (!interrupted) {
             try {

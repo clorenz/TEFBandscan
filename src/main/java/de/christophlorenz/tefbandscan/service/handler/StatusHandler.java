@@ -14,6 +14,7 @@ public class StatusHandler {
     private Float signalStrength;
     private Integer bandwidth;
     private Integer cci;
+    private Integer snr;
 
     public void handleStatus(String statusContents) {
         stereo = extractStereoFlag(statusContents);
@@ -23,6 +24,7 @@ public class StatusHandler {
         }
         bandwidth = extractBandwidth(statusContents.substring(1));
         cci = extractCCI(statusContents.substring(1));
+        snr = extractSNR(statusContents.substring(1));
     }
 
     public void handleFrequency(String frequencyInKHz) {
@@ -70,11 +72,21 @@ public class StatusHandler {
         return null;
     }
 
+    private Integer extractSNR(String statusContents) {
+        String[] dataParts = statusContents.split(",");
+        if (dataParts.length > 4) {
+            return Integer.parseInt(dataParts[4]);
+        } else {
+            return null;
+        }
+    }
+
     public void reset() {
         frequencyKhz = null;
         stereo = null;
         signalStrength = null;
         bandwidth = null;
+        snr = null;
     }
 
     @Override
@@ -85,6 +97,7 @@ public class StatusHandler {
                 ", signalStrength=" + signalStrength +
                 ", CCI=" + cci +
                 ", bandwidth=" + bandwidth +
+                ", snr=" + snr +
                 '}';
     }
 
@@ -102,6 +115,10 @@ public class StatusHandler {
 
     public Integer getCci() {
         return cci;
+    }
+
+    public Integer getSnr() {
+        return snr;
     }
 
     public void handleFrequency(int frequencyInKHz) {

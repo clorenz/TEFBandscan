@@ -1,5 +1,6 @@
 package de.christophlorenz.tefbandscan.service;
 
+import de.christophlorenz.tefbandscan.model.Bandwidth;
 import de.christophlorenz.tefbandscan.model.Status;
 import de.christophlorenz.tefbandscan.repository.BandscanRepository;
 import de.christophlorenz.tefbandscan.repository.CommunicationRepository;
@@ -35,6 +36,7 @@ public class AutoScannerService extends AbstractBaseScannerService implements Sc
 
     @Override
     public void scan() throws ServiceException {
+        setBandwidth(Bandwidth.BANDWIDTH_114);
         int frequency=87500;
         lastFrequencyChangeTime= System.currentTimeMillis();
         setFrequency(frequency);
@@ -45,7 +47,9 @@ public class AutoScannerService extends AbstractBaseScannerService implements Sc
                 lineHandler.handle(communicationRepository.read());
                 statusHistory.setCurrentStatus(getCurrentStatus());
                 if (isTimeout() || hasStabilized()) {
-                    generateLog();
+                    if (isValidEntry()) {
+                        generateLog();
+                    }
                     if (frequency >= BAND_END) {
                         interrupted=true;
                     } else {
@@ -58,6 +62,10 @@ public class AutoScannerService extends AbstractBaseScannerService implements Sc
                 interrupted = true;
             }
         }
+    }
+
+    private boolean isValidEntry() {
+        return (statusHistory.getAverageSignal()>15 && statusHistory.getAverageGGI()<20 && statusHistory.getAverageSnr()>=15);
     }
 
     @Override

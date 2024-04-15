@@ -10,6 +10,7 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.io.Serial;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -23,15 +24,18 @@ public class ApplicationConfig {
     private final CSVBandscanRepository csvBandscanRepository;
     private final AutoScannerService autoScannerService;
     private final ManualScannerService manualScannerService;
+    private final SerialCommunicationRepository serialCommunicationRepository;
     private final TCPCommunicationRepository tcpCommunicationRepository;
 
     public ApplicationConfig(ApplicationArguments applicationArguments, AutoScannerService autoScannerService, ManualScannerService manualScannerService,
                              CSVBandscanRepository csvBandscanRepository,
+                             SerialCommunicationRepository serialCommunicationRepository,
                              TCPCommunicationRepository tcpCommunicationRepository) {
         this.applicationArguments = applicationArguments;
         this.autoScannerService = autoScannerService;
         this.manualScannerService = manualScannerService;
         this.csvBandscanRepository = csvBandscanRepository;
+        this.serialCommunicationRepository = serialCommunicationRepository;
         this.tcpCommunicationRepository = tcpCommunicationRepository;
     }
 
@@ -59,13 +63,13 @@ public class ApplicationConfig {
     BandscanRepository getBandscanRepository() {
         String database = "default";
         List<String> databaseNames = applicationArguments.getOptionValues("database");
-        if (databaseNames != null && databaseNames.isEmpty()) {
+        if (databaseNames != null && !databaseNames.isEmpty()) {
             database = databaseNames.get(0);
         }
         try {
             csvBandscanRepository.init(database);
         } catch (RepositoryException e) {
-            System.err.println("Cannot work with CSV based database: " + e.getMessage());
+            System.err.println("Cannot work with CSV based database " + database + ": " + e.getMessage());
             Runtime.getRuntime().halt(1);
         }
         return csvBandscanRepository;
@@ -73,12 +77,24 @@ public class ApplicationConfig {
 
     @Bean(name = "currentCommunicationRepository")
     CommunicationRepository getCommunicationRepository() {
-        try {
-            tcpCommunicationRepository.initialize();
-        } catch (RepositoryException e) {
-            System.err.println("Cannot initialite TCP communication: " + e.getMessage());
-            Runtime.getRuntime().halt(2);
+        if (applicationArguments.getNonOptionArgs().contains("serial")) {
+            try {
+                serialCommunicationRepository.initialize();
+            } catch (RepositoryException e) {
+                System.err.println("Cannot initialize serial communication: " + e.getMessage());
+                Runtime.getRuntime().halt(2);
+            }
+            LOGGER.info("Initializing serial communication");
+            return serialCommunicationRepository;
+        } else {
+            try {
+                tcpCommunicationRepository.initialize();
+            } catch (RepositoryException e) {
+                System.err.println("Cannot initialize TCP communication: " + e.getMessage());
+                Runtime.getRuntime().halt(2);
+            }
+            LOGGER.info("Initializing WIFI communication");
+            return tcpCommunicationRepository;
         }
-        return tcpCommunicationRepository;
     }
 }

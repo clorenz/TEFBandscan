@@ -1,4 +1,4 @@
-<div id="status" th:fragment="status(time, freq, pi, ps, signal, bandwidth)">
+<div id="status" th:fragment="status(time, freq, pi, ps, signal, bandwidth, snr)">
     <div style="font-size: xxx-large; font-family: monospace;">
         <span id="freq" th:text="${freq}">87.5 MHz</span> &nbsp;
         <span id="pi" th:text="${pi}" style="background-color: lightgrey"></span> &nbsp;
@@ -6,5 +6,6 @@
         <span id="signal" th:text="${signal + 'dBµV'}"></span> &nbsp;
         <span id="cci" th:text="${cci + '%'}"></span> &nbsp;
         <span id="bandwidth" th:text="${bandwidth + 'kHz'}"></span>
+        <span id="snr" th:text="${snr + 'dB'}"></span>
     </div>
 </div>

@@ -1,10 +1,12 @@
 package de.christophlorenz.tefbandscan.service;
 
 import de.christophlorenz.tefbandscan.model.BandscanEntry;
+import de.christophlorenz.tefbandscan.model.Bandwidth;
 import de.christophlorenz.tefbandscan.model.Status;
 import de.christophlorenz.tefbandscan.model.StatusHistory;
 import de.christophlorenz.tefbandscan.repository.BandscanRepository;
 import de.christophlorenz.tefbandscan.repository.CommunicationRepository;
+import de.christophlorenz.tefbandscan.repository.RepositoryException;
 import de.christophlorenz.tefbandscan.service.handler.LineHandler;
 import de.christophlorenz.tefbandscan.service.handler.RDSHandler;
 import de.christophlorenz.tefbandscan.service.handler.StatusHandler;
@@ -71,7 +73,8 @@ public abstract class AbstractBaseScannerService implements ScannerService {
         try {
             BandscanEntry bandscanEntry = new BandscanEntry(statusHandler.getCurrentFrequency(), rdsHandler.getPi(), rdsHandler.getPs(),
                     Math.round(statusHistory.getAverageSignal()),
-                    statusHistory.getAverageGGI());
+                    statusHistory.getAverageGGI(),
+                    statusHandler.getSnr());
             boolean isNewEntry = bandscanRepository.addEntry(bandscanEntry);
             getLogger().info("Logged " + statusHandler.getCurrentFrequency() + "=" + bandscanEntry);
             return Pair.of(bandscanEntry, isNewEntry);
@@ -88,7 +91,8 @@ public abstract class AbstractBaseScannerService implements ScannerService {
                 rdsHandler.getPs(),
                 statusHandler.getSignalStrength(),
                 statusHandler.getCci(),
-                statusHandler.getBandwidth());
+                statusHandler.getBandwidth(),
+                statusHandler.getSnr());
     }
 
     protected int psLength(String ps) {
@@ -96,6 +100,15 @@ public abstract class AbstractBaseScannerService implements ScannerService {
             return 0;
         }
         return ps.replaceAll("\\s","").length();
+    }
+
+    protected void setBandwidth(Bandwidth bandwidth) throws ServiceException {
+        try {
+            communicationRepository.write("W" + bandwidth.getkHz());
+            LOGGER.info("Setting bandwidth to W" + bandwidth.getkHz() + " resulted in=" + communicationRepository.read());
+        } catch (RepositoryException e) {
+            throw new ServiceException("Cannot set bandwidth to W" + bandwidth.getkHz() + ": " + e, e);
+        }
     }
 
     protected Logger getLogger() {

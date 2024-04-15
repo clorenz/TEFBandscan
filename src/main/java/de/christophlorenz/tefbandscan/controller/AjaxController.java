@@ -43,6 +43,7 @@ public class AjaxController {
             map.addAttribute("signal", status.signal() != null ? Math.round(status.signal()) : "");
             map.addAttribute("cci", status.cci());
             map.addAttribute("bandwidth", status.bandwidth());
+            map.addAttribute("snr", status.snr());
         } else {
             map.addAttribute("freq","---- (please select new frequency) ----");
         }
