@@ -37,8 +37,8 @@ public class ManualScannerService extends AbstractBaseScannerService implements 
 
     @Override
     public void scan() throws ServiceException {
-        // Send bandwidth to 110kHz
-        setBandwidth(Bandwidth.BANDWIDTH_114);
+        // Send bandwidth to 133kHz, which is optimal for RDS
+        setBandwidth(Bandwidth.BANDWIDTH_133);
 
         boolean interrupted=false;
         while (!interrupted) {

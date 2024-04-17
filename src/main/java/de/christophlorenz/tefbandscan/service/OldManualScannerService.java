@@ -207,6 +207,6 @@ public class OldManualScannerService extends AbstractBaseScannerService implemen
 
 
     public Status getCurrentStatus() {
-        return new Status(statusHandler.getCurrentFrequency(), rdsHandler.getPi(), rdsHandler.getPs(), statusHandler.getSignalStrength(), statusHandler.getCci(), statusHandler.getBandwidth(), statusHandler.getSnr());
+        return new Status(statusHandler.getCurrentFrequency(), rdsHandler.getPi(), rdsHandler.getPs(), statusHandler.getSignalStrength(), statusHandler.getCci(), statusHandler.getBandwidth(), statusHandler.getSnr(), rdsHandler.getRdsErrorRate());
     }
 }

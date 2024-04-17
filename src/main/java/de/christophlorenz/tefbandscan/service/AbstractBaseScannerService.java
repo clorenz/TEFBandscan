@@ -92,7 +92,8 @@ public abstract class AbstractBaseScannerService implements ScannerService {
                 statusHandler.getSignalStrength(),
                 statusHandler.getCci(),
                 statusHandler.getBandwidth(),
-                statusHandler.getSnr());
+                statusHandler.getSnr(),
+                rdsHandler.getRdsErrorRate());
     }
 
     protected int psLength(String ps) {

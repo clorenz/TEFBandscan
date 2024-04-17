@@ -12,6 +12,8 @@ public class RDSHandler {
 
     private final PS ps;
 
+    private int rdsErrorRate;
+
     public RDSHandler(PS ps) {
         this.ps = ps;
     }
@@ -19,7 +21,7 @@ public class RDSHandler {
     private String pi;
 
     public void handlePI(String pi) {
-        if (pi == null || pi.contains("???")) {
+        if (pi == null || pi.contains("?")) {
             return;
         }
         this.pi = pi;
@@ -38,7 +40,7 @@ public class RDSHandler {
         // hexCharacters 9-12 = RDS Block D
         String rdsD = line.substring(8,12);
         // RDS Error rate = hexCharacters 13-14
-        int rdsErrorRate = Integer.parseInt(line.substring(12,13));
+        rdsErrorRate = Integer.parseInt(line.substring(12,14), 16);
 
         int groupType = calculateGroupType(rdsB);
         int version= calculateVersion(rdsB);
@@ -47,7 +49,7 @@ public class RDSHandler {
 
         switch (group) {
             case "0A" -> {
-                if (rdsErrorRate==0 ) {
+                if (rdsErrorRate<16 ) {         // To be fine-tuned
                     ps.calculatePS(rdsB, rdsD);
                 }
             }
@@ -57,6 +59,7 @@ public class RDSHandler {
     public void reset() {
         pi = null;
         ps.reset();
+        rdsErrorRate=0;
     }
 
 
@@ -65,7 +68,8 @@ public class RDSHandler {
     public String toString() {
         return "RDSHandler{" +
                 "PI='" + (pi != null ? pi : "") + '\'' +
-                ",PS='" + ps.getPs() + '\'' +
+                ", PS='" + ps.getPs() + '\'' +
+                ", errorRate=" + rdsErrorRate +
                 '}';
     }
 
@@ -79,5 +83,9 @@ public class RDSHandler {
 
     public String getPs() {
         return ps.getPs();
+    }
+
+    public int getRdsErrorRate() {
+        return rdsErrorRate;
     }
 }

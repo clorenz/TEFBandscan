@@ -87,13 +87,20 @@ public class ApplicationConfig {
             LOGGER.info("Initializing serial communication");
             return serialCommunicationRepository;
         } else {
-            try {
-                tcpCommunicationRepository.initialize();
-            } catch (RepositoryException e) {
-                System.err.println("Cannot initialize TCP communication: " + e.getMessage());
-                Runtime.getRuntime().halt(2);
+            boolean established=false;
+            while (!established) {
+                try {
+                    tcpCommunicationRepository.initialize();
+                    established = true;
+                } catch (RepositoryException e) {
+                    System.err.println("Cannot yet initialize TCP communication: " + e.getMessage());
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException ignore) {
+                    }
+                }
             }
-            LOGGER.info("Initializing WIFI communication");
+            LOGGER.info("Succesfully initialized WIFI communication");
             return tcpCommunicationRepository;
         }
     }
