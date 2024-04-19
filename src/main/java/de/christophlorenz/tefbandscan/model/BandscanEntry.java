@@ -11,6 +11,7 @@ public class BandscanEntry implements Comparable<BandscanEntry>{
     private Integer frequencyKHz;
     private String rdsPi;
     private String rdsPs;
+    private Integer rdsErrors;
     private int signalStrength;
     private int cci;
     private Integer snr;
@@ -19,11 +20,11 @@ public class BandscanEntry implements Comparable<BandscanEntry>{
     public BandscanEntry() {
     }
 
-    public BandscanEntry(Integer frequencyKHz, String rdsPI, String rdsPS, Integer signalStrength, Integer cci, Integer snr) {
-        this(frequencyKHz, rdsPI, rdsPS, signalStrength, cci, snr, LocalDateTime.now());
+    public BandscanEntry(Integer frequencyKHz, String rdsPI, String rdsPS, Integer rdsErrors, Integer signalStrength, Integer cci, Integer snr) {
+        this(frequencyKHz, rdsPI, rdsPS, rdsErrors, signalStrength, cci, snr, LocalDateTime.now());
     }
 
-    public BandscanEntry(int frequencyKHz, String rdsPI, String rdsPS, int signalStrength, int cci, Integer snr, LocalDateTime timestamp) {
+    public BandscanEntry(int frequencyKHz, String rdsPI, String rdsPS, Integer rdsErrors, int signalStrength, int cci, Integer snr, LocalDateTime timestamp) {
         this.frequencyKHz= frequencyKHz;
         this.rdsPi= rdsPI;
         if (rdsPi != null && rdsPi.isBlank()) {
@@ -33,6 +34,7 @@ public class BandscanEntry implements Comparable<BandscanEntry>{
         if (rdsPs != null && rdsPs.isBlank()) {
             rdsPs = null;
         }
+        this.rdsErrors = rdsErrors;
         this.signalStrength = signalStrength;
         this.cci = cci;
         this.snr = snr;
@@ -103,17 +105,21 @@ public class BandscanEntry implements Comparable<BandscanEntry>{
         return snr;
     }
 
+    public Integer getRdsErrors() {
+        return rdsErrors;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         BandscanEntry that = (BandscanEntry) o;
-        return signalStrength == that.signalStrength && cci == that.cci && Objects.equals(frequencyKHz, that.frequencyKHz) && Objects.equals(rdsPi, that.rdsPi) && Objects.equals(rdsPs, that.rdsPs) && Objects.equals(snr, that.snr) && Objects.equals(timestamp, that.timestamp);
+        return signalStrength == that.signalStrength && cci == that.cci && Objects.equals(frequencyKHz, that.frequencyKHz) && Objects.equals(rdsPi, that.rdsPi) && Objects.equals(rdsPs, that.rdsPs) && Objects.equals(snr, that.snr) && Objects.equals(timestamp, that.timestamp) && Objects.equals(rdsErrors, that.rdsErrors);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(frequencyKHz, rdsPi, rdsPs, signalStrength, cci, snr, timestamp);
+        return Objects.hash(frequencyKHz, rdsPi, rdsPs, rdsErrors, signalStrength, cci, snr, timestamp);
     }
 
     @Override
@@ -122,6 +128,7 @@ public class BandscanEntry implements Comparable<BandscanEntry>{
                 "frequencyKHz=" + frequencyKHz +
                 ", rdsPi='" + rdsPi + '\'' +
                 ", rdsPs='" + rdsPs + '\'' +
+                ", rdsErrors=" + rdsErrors +
                 ", signalStrength=" + signalStrength +
                 ", cci=" + cci +
                 ", snr=" + snr +

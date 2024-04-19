@@ -72,6 +72,7 @@ public abstract class AbstractBaseScannerService implements ScannerService {
     public Pair<BandscanEntry,Boolean> generateLog() throws ServiceException {
         try {
             BandscanEntry bandscanEntry = new BandscanEntry(statusHandler.getCurrentFrequency(), rdsHandler.getPi(), rdsHandler.getPs(),
+                    statusHistory.getAverageRdsErrors(),
                     Math.round(statusHistory.getAverageSignal()),
                     statusHistory.getAverageGGI(),
                     statusHandler.getSnr());
@@ -89,6 +90,7 @@ public abstract class AbstractBaseScannerService implements ScannerService {
                 statusHandler.getCurrentFrequency(),
                 rdsHandler.getPi(),
                 rdsHandler.getPs(),
+                rdsHandler.getRdsErrorRate(),
                 statusHandler.getSignalStrength(),
                 statusHandler.getCci(),
                 statusHandler.getBandwidth(),

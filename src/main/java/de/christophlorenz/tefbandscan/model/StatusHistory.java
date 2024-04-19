@@ -109,4 +109,13 @@ public class StatusHistory {
                         .toArray(Float[]::new));
         return snr.getLeft().intValue();
     }
+
+    public int getAverageRdsErrors() {
+        Pair<Float,Float> rdsErrors =
+            calculateMeanAndStandardDeviation(Arrays.stream(statuses).map(Status::rdsErrors)
+                .filter(Objects::nonNull)
+                .map(Integer::floatValue)
+                .toArray(Float[]::new));
+        return rdsErrors.getLeft().intValue();
+    }
 }

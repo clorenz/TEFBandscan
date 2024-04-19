@@ -44,6 +44,7 @@ public class AjaxController {
             map.addAttribute("cci", status.cci());
             map.addAttribute("bandwidth", status.bandwidth());
             map.addAttribute("snr", status.snr());
+            map.addAttribute("rdserrors", status.rdsErrors());
         } else {
             map.addAttribute("freq","---- (please select new frequency) ----");
         }

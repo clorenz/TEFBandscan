@@ -1,8 +1,9 @@
-<div id="status" th:fragment="status(time, freq, pi, ps, signal, bandwidth, snr)">
+<div id="status" th:fragment="status(time, freq, pi, ps, rdserrors, signal, bandwidth, snr)">
     <div style="font-size: xxx-large; font-family: monospace;">
         <span id="freq" th:text="${freq}">87.5 MHz</span> &nbsp;
         <span id="pi" th:text="${pi}" style="background-color: lightgrey"></span> &nbsp;
         <span id="ps" th:text="${#strings.replace(ps,' ','_')}" style="background-color: lightgrey"></span> &nbsp;
+        <span id="rdserrors" th:text="${rdserrors + '%'}" style="background-color: lightgrey"></span>
         <span id="signal" th:text="${signal + 'dBµV'}"></span> &nbsp;
         <span id="cci" th:text="${cci + '%'}"></span> &nbsp;
         <span id="bandwidth" th:text="${bandwidth + 'kHz'}"></span>

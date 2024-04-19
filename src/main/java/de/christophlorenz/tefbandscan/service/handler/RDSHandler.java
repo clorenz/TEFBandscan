@@ -49,9 +49,9 @@ public class RDSHandler {
 
         switch (group) {
             case "0A" -> {
-                if (rdsErrorRate<16 ) {         // To be fine-tuned
-                    ps.calculatePS(rdsB, rdsD);
-                }
+                // TODO: On high RDS errors, write empty PS fields; overwrite them only on low RDS errors
+                // Maybe track for each character pair the RDS error value
+                ps.calculatePS(rdsB, rdsD, rdsErrorRate);
             }
         }
     }
@@ -87,5 +87,9 @@ public class RDSHandler {
 
     public int getRdsErrorRate() {
         return rdsErrorRate;
+    }
+
+    public int getPsErrors() {
+        return ps.getPsErrors();
     }
 }

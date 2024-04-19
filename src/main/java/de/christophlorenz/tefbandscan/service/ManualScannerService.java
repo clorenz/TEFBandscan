@@ -10,6 +10,7 @@ import de.christophlorenz.tefbandscan.repository.RepositoryException;
 import de.christophlorenz.tefbandscan.service.handler.LineHandler;
 import de.christophlorenz.tefbandscan.service.handler.RDSHandler;
 import de.christophlorenz.tefbandscan.service.handler.StatusHandler;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +35,7 @@ public class ManualScannerService extends AbstractBaseScannerService implements 
     boolean isLogged=false;
     BandscanEntry latestLog = null;
     boolean latestLogIsNewEntry = false;
+    int lastRdsPsErrors=999;
 
     @Override
     public void scan() throws ServiceException {
@@ -46,6 +48,7 @@ public class ManualScannerService extends AbstractBaseScannerService implements 
                 lineHandler.handle(communicationRepository.read());
                 Status currentStatus = getCurrentStatus();
                 statusHistory.setCurrentStatus(currentStatus);
+                int currentRdsPsErrors = rdsHandler.getPsErrors();
                 if ((!isLogged) && hasStabilized()) {
                     Pair<BandscanEntry, Boolean> logResult = generateLog();
                     latestLog = logResult.getLeft();
@@ -68,11 +71,12 @@ public class ManualScannerService extends AbstractBaseScannerService implements 
                         isLogged = true;
                         blinkOnDevice();
                     } else if ((latestLog.getRdsPs() == null && currentStatus.rdsPs() != null) ||
-                            (psLength(latestLog.getRdsPs()) < psLength(currentStatus.rdsPs())) ){
-                        LOGGER.info("Logging again, since PS was detected or improved. Before: " + latestLog.getRdsPs() + ", now: " + currentStatus.rdsPs());
+                            ( (lastRdsPsErrors > currentRdsPsErrors) && !StringUtils.equals(latestLog.getRdsPs(), currentStatus.rdsPs())) ) {
+                        LOGGER.info("Logging again, since PS was detected or improved. Before: " + latestLog.getRdsPs() + " (Errors=" + lastRdsPsErrors + "), now: " + currentStatus.rdsPs() + " (Errors=" + currentRdsPsErrors + ")");
                         Pair<BandscanEntry, Boolean> logResult = generateLog();
                         latestLog = logResult.getLeft();
                         latestLogIsNewEntry = logResult.getRight();
+                        lastRdsPsErrors = currentRdsPsErrors;
                         isLogged = true;
                         blinkOnDevice();
                     }
