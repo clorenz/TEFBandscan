@@ -18,7 +18,8 @@ Currently, it is only tested to run in IntelliJ IDEA.
   - First comma separated value: Signal strength (dBµV + 11.25)
   - Second comma separated value: CCI (co-channel interference, based on multipath meter) in percent
   - Third comma separated value: ACI (adjacent channel = interference above the RDS subcarriers) in percent
-  - Fourth comma separated value: Current bandwidth in kHZ
+  - Fourth comma separated value: Current bandwidth in kHz
+  - Custom addition: Fifth comma separated value: S/N ratio in dB
 
 ### Write (and read the same as confirmation)
 
