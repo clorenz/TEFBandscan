@@ -1,6 +1,15 @@
 Utility to manually or automatically create a bandscan for TEF6686 based radios.
 
-## Protocol
+Requires a [patched version](https://github.com/clorenz/TEF6686_ESP32/tree/force-beep) of 
+the firmware with the following changes:
+
+- Return the S/N ratio
+- Allow to play a short beep when sending the command `L` via Wifi/XDRGtk protocol
+
+Currently, it is only tested to run in IntelliJ IDEA.
+
+
+## XDRGtk Protocol
 
 ### Read
 
@@ -95,3 +104,7 @@ Utility to manually or automatically create a bandscan for TEF6686 based radios.
 - *X*: Kind of reset?
 
 - *Z* (Z0..Z3): Switch antennas
+
+Custom addition:
+
+- *L* Play a short beep (e.g. to indicate, that a log entry was made)
