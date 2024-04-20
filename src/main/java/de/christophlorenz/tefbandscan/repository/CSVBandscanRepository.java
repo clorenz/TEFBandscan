@@ -44,6 +44,7 @@ import java.util.List;
  *     <li>QRG</li>
  *     <li>RDS-PI</li>
  *     <li>RDS-PS</li>
+ *     <li>PS errors</li>
  *     <li>RDS-Errors in %</li>
  *     <li>signal strength in dbµV</li>
  *     <li>CCI in percent</li>
@@ -68,11 +69,11 @@ public class CSVBandscanRepository implements BandscanRepository {
     }
 
     @Override
-    public boolean addEntry(Integer frequencyKHz, String rdsPI, String rdsPS, Integer rdsErrors, Integer signalStrength, Integer cci, Integer snr) throws RepositoryException {
+    public boolean addEntry(Integer frequencyKHz, String rdsPI, String rdsPS, Integer psErrors, Integer rdsErrors, Integer signalStrength, Integer cci, Integer snr) throws RepositoryException {
         if (frequencyKHz == null) {
             return false;
         }
-        BandscanEntry bandscanEntry = new BandscanEntry(frequencyKHz, rdsPI, rdsPS, rdsErrors, signalStrength, cci, snr);
+        BandscanEntry bandscanEntry = new BandscanEntry(frequencyKHz, rdsPI, rdsPS, psErrors, rdsErrors, signalStrength, cci, snr);
         return addEntry(bandscanEntry);
     }
 
@@ -108,6 +109,7 @@ public class CSVBandscanRepository implements BandscanRepository {
                        Integer.parseInt(e.getQrg()),
                        e.getRdsPi(),
                        e.getRdsPs(),
+                       e.getPsErrors(),
                        e.getRdsErrors(),
                        e.getSignal(),
                        e.getCci(),
@@ -142,6 +144,7 @@ public class CSVBandscanRepository implements BandscanRepository {
                             e.getFrequencyKHz()+"",
                             e.getRdsPi(),
                             e.getRdsPs(),
+                            e.getPsErrors(),
                             e.getRdsErrors(),
                             e.getSignalStrength(),
                             e.getCci(),
@@ -186,19 +189,26 @@ public class CSVBandscanRepository implements BandscanRepository {
                 DateTimeFormatter.ISO_DATE_TIME.format(e.getTimestamp())};
     }
 
-  private class CSVBandScanEntryHeaderPositionComparator implements Comparator<String> {
+    @Override
+    public BandscanEntry getByFrequencyAndPI(Integer frequency, String pi) {
+        return bandscan.getByFrequencyAndPI(frequency, pi);
+    }
+
+    private class CSVBandScanEntryHeaderPositionComparator implements Comparator<String> {
 
     private Map<String, Integer> positions = new HashMap<>();
 
     public CSVBandScanEntryHeaderPositionComparator() {
-      positions.put("QRG",0);
-      positions.put("PI",1);
-      positions.put("PS",2);
-      positions.put("RDSERR", 3);
-      positions.put("SIGNAL", 4);
-      positions.put("CCI", 5);
-      positions.put("SNR", 6);
-      positions.put("TIMESTAMP", 7);
+        int pos=0;
+      positions.put("QRG",pos++);
+      positions.put("PI",pos++);
+      positions.put("PS",pos++);
+        positions.put("PSERR",pos++);
+      positions.put("RDSERR", pos++);
+      positions.put("SIGNAL", pos++);
+      positions.put("CCI", pos++);
+      positions.put("SNR", pos++);
+      positions.put("TIMESTAMP", pos++);
     }
 
     @Override

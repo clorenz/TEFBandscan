@@ -14,7 +14,7 @@
 <h1>Bandscan</h1>
 
 
-<div id="status" th:replace="~{fragments :: status(${time},${freq},${pi},${ps},${rdserrors},${signal},${bandwidth},${snr})}"></div>
+<div id="status" th:replace="~{fragments :: status(${time},${freq},${pi},${piErrors},${ps},${psWithErrors},${rdserrors},${signal},${bandwidth},${snr})}"></div>
 
 <hr>
 
@@ -24,6 +24,7 @@
             <th data-field="frequencyKHz">QRG</th>
             <th data-field="rdsPI">PI</th>
             <th data-field="rdsPS">PS</th>
+            <th data-field="psErrors">PS Errors</th>
             <th data-field="rdsErrors">RDS Errors</th>
             <th data-field="signalStrength">signal</th>
             <th data-field="cci">CCI</th>
@@ -52,6 +53,7 @@
                 { data: 'frequencyKHz'},
                 { data: 'rdsPi'},
                 { data: 'rdsPs'},
+                { data: 'psErrors'},
                 { data: 'rdsErrors' },
                 { data: 'signalStrength'},
                 { data: 'cci'},

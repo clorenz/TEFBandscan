@@ -21,6 +21,9 @@ public class CSVBandscanEntry implements Comparable<CSVBandscanEntry>{
   @CsvBindByName(column = "PS")
   private String rdsPs;
 
+  @CsvBindByName(column = "PSErr")
+  private Integer psErrors;
+
   @CsvBindByName(column = "RDSErr")
   private Integer rdsErrors;
 
@@ -40,10 +43,11 @@ public class CSVBandscanEntry implements Comparable<CSVBandscanEntry>{
   public CSVBandscanEntry() {
   }
 
-  public CSVBandscanEntry(String qrg, String rdsPi, String rdsPs, Integer rdsErrors, int signal, int cci, Integer snr, LocalDateTime timestamp) {
+  public CSVBandscanEntry(String qrg, String rdsPi, String rdsPs, Integer psErrors, Integer rdsErrors, int signal, int cci, Integer snr, LocalDateTime timestamp) {
     this.qrg = qrg;
     this.rdsPi = rdsPi;
     this.rdsPs = rdsPs;
+    this.psErrors = psErrors;
     this.rdsErrors = (rdsPi != null ? rdsErrors : null);
     this.signal = signal;
     this.cci = cci;
@@ -115,12 +119,21 @@ public class CSVBandscanEntry implements Comparable<CSVBandscanEntry>{
     this.timestamp = timestamp;
   }
 
+  public Integer getPsErrors() {
+    return psErrors;
+  }
+
+  public void setPsErrors(Integer psErrors) {
+    this.psErrors = psErrors;
+  }
+
   @Override
   public String toString() {
     return "CSVBandscanEntry{" +
         "qrg='" + qrg + '\'' +
         ", rdsPi='" + rdsPi + '\'' +
         ", rdsPs='" + rdsPs + '\'' +
+        ", psErrors=" + psErrors +
         ", rdsErrors=" + rdsErrors +
         ", signal=" + signal +
         ", cci=" + cci +

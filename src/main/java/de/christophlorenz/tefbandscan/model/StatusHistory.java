@@ -92,7 +92,7 @@ public class StatusHistory {
         return signal.getLeft();
     }
 
-    public int getAverageGGI() {
+    public int getAverageCCI() {
         Pair<Float, Float> cci =
                 calculateMeanAndStandardDeviation(Arrays.stream(statuses).map(Status::cci)
                         .map(Integer::floatValue)

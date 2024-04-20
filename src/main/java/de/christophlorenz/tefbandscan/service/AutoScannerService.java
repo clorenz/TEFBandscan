@@ -65,7 +65,7 @@ public class AutoScannerService extends AbstractBaseScannerService implements Sc
     }
 
     private boolean isValidEntry() {
-        return (statusHistory.getAverageSignal()>15 && statusHistory.getAverageGGI()<20 && statusHistory.getAverageSnr()>=15);
+        return (statusHistory.getAverageSignal()>15 && statusHistory.getAverageCCI()<20 && statusHistory.getAverageSnr()>=15);
     }
 
     @Override

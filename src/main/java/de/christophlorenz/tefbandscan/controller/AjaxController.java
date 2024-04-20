@@ -39,7 +39,9 @@ public class AjaxController {
         if (frequency != null) {
             map.addAttribute("freq", String.format("%.02f MHz", ((float) frequency / 1000f)));
             map.addAttribute("pi", status.rdsPi());
+            map.addAttribute("piErrors", status.piErrors());
             map.addAttribute("ps", status.rdsPs());
+            map.addAttribute("psWithErrors", status.psWithErrors());
             map.addAttribute("signal", status.signal() != null ? Math.round(status.signal()) : "");
             map.addAttribute("cci", status.cci());
             map.addAttribute("bandwidth", status.bandwidth());

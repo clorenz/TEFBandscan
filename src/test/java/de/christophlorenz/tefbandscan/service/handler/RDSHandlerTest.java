@@ -1,5 +1,6 @@
 package de.christophlorenz.tefbandscan.service.handler;
 
+import de.christophlorenz.tefbandscan.service.handler.rds.PI;
 import de.christophlorenz.tefbandscan.service.handler.rds.PS;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -16,8 +17,9 @@ class RDSHandlerTest {
 
     @BeforeEach
     public void beforeEach() {
+        PI piHandler = mock(PI.class);
         PS psHandler = mock(PS.class);
-        this.rdsHandler = new RDSHandler(psHandler);
+        this.rdsHandler = new RDSHandler(piHandler, psHandler);
     }
 
     @DisplayName("can calculate the versions A(=0) and B(=1)")

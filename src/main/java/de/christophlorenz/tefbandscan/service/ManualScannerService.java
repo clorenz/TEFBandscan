@@ -1,9 +1,6 @@
 package de.christophlorenz.tefbandscan.service;
 
-import de.christophlorenz.tefbandscan.model.Bandscan;
-import de.christophlorenz.tefbandscan.model.BandscanEntry;
-import de.christophlorenz.tefbandscan.model.Bandwidth;
-import de.christophlorenz.tefbandscan.model.Status;
+import de.christophlorenz.tefbandscan.model.*;
 import de.christophlorenz.tefbandscan.repository.BandscanRepository;
 import de.christophlorenz.tefbandscan.repository.CommunicationRepository;
 import de.christophlorenz.tefbandscan.repository.RepositoryException;
@@ -32,14 +29,8 @@ public class ManualScannerService extends AbstractBaseScannerService implements 
         lineHandler.setScannerService(this);
     }
 
-    boolean isLogged=false;
-    BandscanEntry latestLog = null;
-    boolean latestLogIsNewEntry = false;
-    int lastRdsPsErrors=999;
-
     @Override
     public void scan() throws ServiceException {
-        // Send bandwidth to 133kHz, which is optimal for RDS
         setBandwidth(Bandwidth.BANDWIDTH_133);
 
         boolean interrupted=false;
@@ -48,36 +39,12 @@ public class ManualScannerService extends AbstractBaseScannerService implements 
                 lineHandler.handle(communicationRepository.read());
                 Status currentStatus = getCurrentStatus();
                 statusHistory.setCurrentStatus(currentStatus);
-                int currentRdsPsErrors = rdsHandler.getPsErrors();
-                if ((!isLogged) && hasStabilized()) {
+                LogQuality logQuality = isLoggable(currentStatus);
+                if (logQuality != LogQuality.NOP) {
+                    // We can log!
                     Pair<BandscanEntry, Boolean> logResult = generateLog();
-                    latestLog = logResult.getLeft();
-                    latestLogIsNewEntry = logResult.getRight();
-                    isLogged=true;
-                    blinkOnDevice();
-                } else if (isLogged) {
-                    // Let's see... Maybe we can improve the log...
-                    if ( (latestLog.getRdsPi() == null && currentStatus.rdsPi() != null) ||
-                            (latestLog.getRdsPi() != null && latestLog.getRdsPi().endsWith("?") && currentStatus.rdsPi() != null && !currentStatus.rdsPi().endsWith("?")))  {
-                        LOGGER.info("Logging again, since PI was detected. Before: " + latestLog.getRdsPi() + ", now: " + currentStatus.rdsPi());
-                        if (latestLogIsNewEntry) {
-                            // We can remove the previous entry
-                            bandscanRepository.removeEntry(latestLog);
-                            LOGGER.info("Removed obsolete entry=" + latestLog);
-                        }
-                        Pair<BandscanEntry, Boolean> logResult = generateLog();
-                        latestLog = logResult.getLeft();
-                        latestLogIsNewEntry = logResult.getRight();
-                        isLogged = true;
-                        blinkOnDevice();
-                    } else if ((latestLog.getRdsPs() == null && currentStatus.rdsPs() != null) ||
-                            ( (lastRdsPsErrors > currentRdsPsErrors) && !StringUtils.equals(latestLog.getRdsPs(), currentStatus.rdsPs())) ) {
-                        LOGGER.info("Logging again, since PS was detected or improved. Before: " + latestLog.getRdsPs() + " (Errors=" + lastRdsPsErrors + "), now: " + currentStatus.rdsPs() + " (Errors=" + currentRdsPsErrors + ")");
-                        Pair<BandscanEntry, Boolean> logResult = generateLog();
-                        latestLog = logResult.getLeft();
-                        latestLogIsNewEntry = logResult.getRight();
-                        lastRdsPsErrors = currentRdsPsErrors;
-                        isLogged = true;
+                    LOGGER.info("Logged " + logResult);
+                    if (logQuality == LogQuality.STANDARD) {
                         blinkOnDevice();
                     }
                 }
@@ -94,7 +61,6 @@ public class ManualScannerService extends AbstractBaseScannerService implements 
         statusHistory.reset();
         rdsHandler.reset();
         unBlinkOnDevice();
-        isLogged=false;
     }
 
     private void blinkOnDevice()   {
@@ -117,10 +83,6 @@ public class ManualScannerService extends AbstractBaseScannerService implements 
         } catch (RepositoryException e) {
             LOGGER.warn("Cannot unblink on device: " + e);
         }
-    }
-
-    private boolean hasStabilized() {
-        return (statusHandler.getCurrentFrequency() != null) && statusHistory.isStable();
     }
 
     protected Logger getLogger() {

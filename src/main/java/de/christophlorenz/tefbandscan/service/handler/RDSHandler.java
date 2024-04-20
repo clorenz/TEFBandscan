@@ -1,34 +1,37 @@
 package de.christophlorenz.tefbandscan.service.handler;
 
+import de.christophlorenz.tefbandscan.model.rds.PSWithErrors;
+import de.christophlorenz.tefbandscan.service.handler.rds.PI;
 import de.christophlorenz.tefbandscan.service.handler.rds.PS;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 public class RDSHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(RDSHandler.class);
 
+    private final PI pi;
+
     private final PS ps;
 
     private int rdsErrorRate;
 
-    public RDSHandler(PS ps) {
+    public RDSHandler(PI pi, PS ps) {
+        this.pi = pi;
         this.ps = ps;
     }
 
-    private String pi;
-
-    public void handlePI(String pi) {
-        if (pi == null || pi.contains("?")) {
-            return;
-        }
-        this.pi = pi;
+    public void handlePI(String rawPi) {
+        pi.setPi(rawPi);
     }
 
     public String getPi() {
-        return (pi == null || pi.isBlank()) ? null : pi;
+        return pi.getPi();
     }
 
     public void handleRDSData(String line) {
@@ -57,7 +60,7 @@ public class RDSHandler {
     }
 
     public void reset() {
-        pi = null;
+        pi.reset();
         ps.reset();
         rdsErrorRate=0;
     }
@@ -67,8 +70,8 @@ public class RDSHandler {
     @Override
     public String toString() {
         return "RDSHandler{" +
-                "PI='" + (pi != null ? pi : "") + '\'' +
-                ", PS='" + ps.getPs() + '\'' +
+                "PI=" + pi +
+                ", PS=" + ps +
                 ", errorRate=" + rdsErrorRate +
                 '}';
     }
@@ -85,11 +88,19 @@ public class RDSHandler {
         return ps.getPs();
     }
 
-    public int getRdsErrorRate() {
+    public Integer getRdsErrorRate() {
         return rdsErrorRate;
     }
 
-    public int getPsErrors() {
+    public Integer getPsErrors() {
         return ps.getPsErrors();
+    }
+
+    public Integer getPiErrors() {
+        return pi.getPiErrors();
+    }
+
+    public PSWithErrors getPsWithErrors() {
+        return ps.getPsWithErrors();
     }
 }

@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public record Bandscan(List<BandscanEntry> bandscanEntries) {
 
@@ -56,5 +57,15 @@ public record Bandscan(List<BandscanEntry> bandscanEntries) {
         if (entryToRemove != null) {
             bandscanEntries.remove(entryToRemove);
         }
+    }
+
+    public BandscanEntry getByFrequencyAndPI(Integer frequency, String pi) {
+        return bandscanEntries.stream()
+                .filter(b ->
+                        Objects.equals(b.getFrequencyKHz(), frequency) &&
+                                Objects.equals(b.getRdsPi(), pi)
+                )
+                        .findFirst()
+                                .orElse(null);
     }
 }

@@ -1,9 +1,6 @@
 package de.christophlorenz.tefbandscan.service;
 
-import de.christophlorenz.tefbandscan.model.BandscanEntry;
-import de.christophlorenz.tefbandscan.model.Bandwidth;
-import de.christophlorenz.tefbandscan.model.Status;
-import de.christophlorenz.tefbandscan.model.StatusHistory;
+import de.christophlorenz.tefbandscan.model.*;
 import de.christophlorenz.tefbandscan.repository.BandscanRepository;
 import de.christophlorenz.tefbandscan.repository.CommunicationRepository;
 import de.christophlorenz.tefbandscan.repository.RepositoryException;
@@ -13,6 +10,8 @@ import de.christophlorenz.tefbandscan.service.handler.StatusHandler;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Objects;
 
 public abstract class AbstractBaseScannerService implements ScannerService {
 
@@ -25,6 +24,9 @@ public abstract class AbstractBaseScannerService implements ScannerService {
     protected final StatusHandler statusHandler;
 
     protected final StatusHistory statusHistory;
+
+    private Status lastStatus;
+
 
     public AbstractBaseScannerService(BandscanRepository bandscanRepository,
                                       CommunicationRepository communicationRepository,
@@ -71,11 +73,15 @@ public abstract class AbstractBaseScannerService implements ScannerService {
 
     public Pair<BandscanEntry,Boolean> generateLog() throws ServiceException {
         try {
-            BandscanEntry bandscanEntry = new BandscanEntry(statusHandler.getCurrentFrequency(), rdsHandler.getPi(), rdsHandler.getPs(),
+            BandscanEntry bandscanEntry = new BandscanEntry(
+                    statusHandler.getCurrentFrequency(),
+                    rdsHandler.getPi(),
+                    rdsHandler.getPs(),
+                    rdsHandler.getPsErrors(),
                     statusHistory.getAverageRdsErrors(),
                     Math.round(statusHistory.getAverageSignal()),
-                    statusHistory.getAverageGGI(),
-                    statusHandler.getSnr());
+                    statusHistory.getAverageCCI(),
+                    statusHistory.getAverageSnr());
             boolean isNewEntry = bandscanRepository.addEntry(bandscanEntry);
             getLogger().info("Logged " + statusHandler.getCurrentFrequency() + "=" + bandscanEntry);
             return Pair.of(bandscanEntry, isNewEntry);
@@ -89,13 +95,15 @@ public abstract class AbstractBaseScannerService implements ScannerService {
         return new Status(
                 statusHandler.getCurrentFrequency(),
                 rdsHandler.getPi(),
+                rdsHandler.getPiErrors(),
                 rdsHandler.getPs(),
+                rdsHandler.getPsErrors(),
+                rdsHandler.getPsWithErrors(),
                 rdsHandler.getRdsErrorRate(),
                 statusHandler.getSignalStrength(),
                 statusHandler.getCci(),
                 statusHandler.getBandwidth(),
-                statusHandler.getSnr(),
-                rdsHandler.getRdsErrorRate());
+                statusHandler.getSnr());
     }
 
     protected int psLength(String ps) {
@@ -117,4 +125,59 @@ public abstract class AbstractBaseScannerService implements ScannerService {
     protected Logger getLogger() {
         return LOGGER;
     }
+
+    protected LogQuality isLoggable(Status currentStatus) {
+        if ((statusHandler.getCurrentFrequency() == null) || (!statusHistory.isStable())) {
+            return LogQuality.NOP;
+        }
+
+        BandscanEntry existingBandscanEntry = bandscanRepository.getByFrequencyAndPI(currentStatus.frequency(), currentStatus.rdsPi());
+        if (existingBandscanEntry == null) {
+            LOGGER.info("No previous bandscan entry for QRG and PI detected. Can log anyways");
+            return LogQuality.STANDARD;
+        }
+
+        if (!Objects.equals(existingBandscanEntry.getRdsPs(), currentStatus.rdsPs()) &&
+                currentStatus.psErrors() != null &&
+                currentStatus.rdsPs() != null &&
+                (existingBandscanEntry.getPsErrors() == null ||
+                        (existingBandscanEntry.getPsErrors() > currentStatus.psErrors()))) {
+            LOGGER.info("Detected positive RDS PS change (" + existingBandscanEntry.getRdsPs() + "->" + currentStatus.rdsPs() + "). Can log.");
+                    return LogQuality.STANDARD;
+        }
+
+
+        if (Objects.equals(existingBandscanEntry.getRdsPs(), currentStatus.rdsPs()) &&
+                currentStatus.psErrors() != null &&
+                ((existingBandscanEntry.getPsErrors() == null) ||
+                existingBandscanEntry.getPsErrors() > currentStatus.psErrors())) {
+            LOGGER.info("Detected RDS PS error decrease (" + existingBandscanEntry.getPsErrors() + "->" + currentStatus.psErrors() + "). Can log silently.");
+            return LogQuality.SILENT;
+        }
+
+        if ( (existingBandscanEntry.getSignalStrength() < statusHistory.getAverageSignal().intValue()) &&
+                Objects.equals(existingBandscanEntry.getRdsPs(), currentStatus.rdsPs())){
+            LOGGER.info("Detected signal increase (" + existingBandscanEntry.getSignalStrength() + "->" + statusHistory.getAverageSignal() + "). Can log silently.");
+            return LogQuality.SILENT;
+        }
+
+        if ( (existingBandscanEntry.getSnr() == null || existingBandscanEntry.getSnr() < statusHistory.getAverageSnr()) &&
+                (Objects.equals(existingBandscanEntry.getRdsPs(), currentStatus.rdsPs()))) {
+            LOGGER.info("Detected S/N increase (" + existingBandscanEntry.getSnr() + "->" + statusHistory.getAverageSnr() + "). Can log silently.");
+            return LogQuality.SILENT;
+        }
+
+        if ( (existingBandscanEntry.getCci() == 0 || existingBandscanEntry.getCci() > statusHistory.getAverageCCI()) &&
+                (Objects.equals(existingBandscanEntry.getRdsPs(), currentStatus.rdsPs())) ){
+            LOGGER.info("Detected CCI decrease (" + existingBandscanEntry.getCci() + "->" + statusHistory.getAverageCCI() + "). Can log silently.");
+            return LogQuality.SILENT;
+        }
+
+        if (Objects.equals(existingBandscanEntry.getRdsPs(), currentStatus.rdsPs())) {
+            return LogQuality.NOP;
+        }
+
+        return LogQuality.NOP;
+    }
+
 }

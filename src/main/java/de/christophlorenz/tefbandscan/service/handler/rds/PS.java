@@ -1,14 +1,23 @@
 package de.christophlorenz.tefbandscan.service.handler.rds;
 
+import de.christophlorenz.tefbandscan.model.rds.PSWithErrors;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 @Component
 public class PS extends AbstractRdsHandler {
+
+    PSWithErrors psWithErrors;
 
     char[] ps;
     Integer[] psErrorRate;
 
     public PS() {
+        psWithErrors = new PSWithErrors();
         ps = new char[8];
         psErrorRate = new Integer[8];
     }
@@ -26,6 +35,9 @@ public class PS extends AbstractRdsHandler {
             psErrorRate[position * 2] = errorRate;
             psErrorRate[position * 2 + 1] = errorRate;
         }
+
+        psWithErrors.setAtPosition(position*2, char1, errorRate);
+        psWithErrors.setAtPosition(position*2+1, char2, errorRate);
     }
 
     public void reset() {
@@ -33,6 +45,7 @@ public class PS extends AbstractRdsHandler {
             ps[i] = 0;
             psErrorRate[i] = null;
         }
+        psWithErrors.reset();
     }
 
     public String getPs() {
@@ -59,5 +72,25 @@ public class PS extends AbstractRdsHandler {
             }
         }
         return sum;
+    }
+
+    @Override
+    public String toString() {
+        StringBuffer ret = new StringBuffer("PS{");
+        for ( int i=0; i<8; i++) {
+            ret.append(ps[i]);
+            ret.append("(");
+            ret.append(psErrorRate[i] != null ? ""+psErrorRate[i] : "-");
+            ret.append(")");
+            if (i<7) {
+                ret.append(" ");
+            }
+        }
+        ret.append("}");
+        return ret.toString();
+    }
+
+    public PSWithErrors getPsWithErrors() {
+        return psWithErrors;
     }
 }
