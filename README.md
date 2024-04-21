@@ -20,9 +20,29 @@ that everything will change any time ;-)
 
 See more documentation in the [doc](doc/) folder.
 
+## Build (untested!)
+
+TEFBandscan requires Java 17 (OpenJDK 17) to be installed and properly configured, including
+the `JAVA_HOME` environment variable. It also requires Apache Maven as properly installed
+build tool.
+
+To build the executable jar, run
+```shell
+mvn clean install
+```
+
+Afterwards, you'll find the artifact in the `target`-directory, e.g. `TEFBandscan-1.0.0-SNAPSHOT.jar`.
+
+To run the jar file, you must provide the TEF6686 WIFI configuration parameters for hostname, port
+and password, e.g.
+
+```shell
+java -Dtef6686.hostname=localhost -Dtef6686.port=7373 -Dtef6686.password=password -jar target/TEFBandscan-1.0.0-SNAPSHOT.jar
+```
+
 ## Usage
 
-Currently, it is not yet possible to run it outside an IDE, but you can configure the
+Currently, it is not yet tested run it outside an IDE, but you can configure the
 modes and the name of the CSV. Please note, that currently only the WIFI connection works.
 Its credentials are in `src/main/resources/application.yaml` and must be configured once.
 
