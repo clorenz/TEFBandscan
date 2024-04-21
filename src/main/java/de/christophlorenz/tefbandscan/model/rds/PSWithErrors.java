@@ -61,6 +61,7 @@ public class PSWithErrors {
     }
 
     public void reset() {
+        psWithErrors.clear();
         init();
     }
 }

@@ -9,20 +9,6 @@ spring:
   config:
     activate:
       on-profile: production
-  datasource:
-    driver-class-name: org.sqlite.JDBC
-
-  jpa:
-    #database-platform: org.hibernate.community.dialect.SQLiteDialect
-    hibernate:
-      ddl-auto: create
-    properties:
-      hibernate:
-        show_sql: true
-        dialect: org.hibernate.community.dialect.SQLiteDialect
-    generate-ddl: true
-    defer-datasource-initialization: true
-    database-platform: org.hibernate.dialect.SQLiteDialect
 
 tef6686:
   hostname: hostname-of-your-radio

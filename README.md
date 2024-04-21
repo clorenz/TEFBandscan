@@ -1,5 +1,10 @@
 Utility to manually or automatically create a bandscan for TEF6686 based radios.
 
+It stores its results in a CSV file, and during scanning, you can
+see the (yet very, very rough) live progress on http://localhost:6686 
+
+![web view](doc/webview.png)
+
 Requires a [patched version](https://github.com/clorenz/TEF6686_ESP32/tree/force-beep) of 
 the firmware with the following changes:
 
@@ -8,104 +13,37 @@ the firmware with the following changes:
 
 Currently, it is only tested to run in IntelliJ IDEA.
 
+![IDEA](doc/idea.png)
 
-## XDRGtk Protocol
+Since it currently not more than a proof-of-concept, chances are high,
+that everything will change any time ;-)
 
-### Read
+See more documentation in the [doc](doc/) folder.
 
-- *S*: Status
-  - First character: `s` or `m`: Stereo flag. `M` indicated, that stereo was toggled off
-  - First comma separated value: Signal strength (dBµV + 11.25)
-  - Second comma separated value: CCI (co-channel interference, based on multipath meter) in percent
-  - Third comma separated value: ACI (adjacent channel = interference above the RDS subcarriers) in percent
-  - Fourth comma separated value: Current bandwidth in kHz
-  - Custom addition: Fifth comma separated value: S/N ratio in dB
+## Usage
 
-### Write (and read the same as confirmation)
+Currently, it is not yet possible to run it outside an IDE, but you can configure the
+modes and the name of the CSV. Please note, that currently only the WIFI connection works.
+Its credentials are in `src/main/resources/application.yaml` and must be configured once.
 
-- *A*: AGC
-  - *A0*: Highest
-  - *A1*: High
-  - *A2*: Medium
-  - *A3*: Low
+### Manual scan mode
 
-- *B*: Stereo toggle
-  - *B0*: 
-  - *B1*:  
+In this mode, you scan manually, and whenever TEFBandscan creates a log (either for the first
+time, or when an existing log can be improved), you get an acoustic feedback, a short beep, on
+your TEF receiver (only, when you use the patched version).
 
-- *C*: Scan ?
-  - C1: one direction
-  - C2: other direction
+The verbose logging on STDOUT (not to be mixed with the structured CSV logging!) will give you 
+an impression, what happened.
 
-- *D*: FM Deemphasis
-  - *D0*: 50µs
-  - *D1*: 75µs
-  - *D2*: 0µs
+To start, just set the CSV "database" name as parameter, e.g. `--database=manual`. If this
+parameter is not given, the logging is done into the default CSV file, called `default.csv`.
 
-- *F*: Bandwidth presets
-  - *F0*: 0kHz (auto?)
-  - *F1*: 56kHz 
-  - *F2*: 64kHz
-  - *F3*: 72kHz
-  - *F4*: 84kHz
-  - *F5*: 97kHz
-  - *F6*: 114kHz
-  - *F7*: 133kHz
-  - *F8*: 151kHz
-  - *F9*: 168kHz
-  - *F10*: 184kHz
-  - *F11*: 200kHz
-  - *F12*: 217kHz
-  - *F13*: 236kHz
-  - *F14*: 254kHz
-  - *F15*: 287kHz
-  - *F16*: 311kHz
+### Automatic scan mode
 
-- *G*
-  - *G00*: iMS + EQ off
-  - *G01*: iMS on
-  - *G10*: EQ on
-  - *G11*: iMS + EQ on
+In this mode, the TEF receiver scans eternally, and every time, it sees a valid new reception, or
+it can improve an already existing log, it creates or updates a log entry. Currently, you don't get
+any feedback on your device, but the textual logging on STDOUT is pretty verbose.
 
-- *M*: AM Frequency?
-
-- *Q*: Squelch - Values: 0-100 and -1 for silent
-
-- *S*: Scanning
-  - *Sa*: Start frequency in kHz
-  - *Sb*: End frequency in kHz
-  - *Sc*: Steps in kHz
-  - *Sf*: Filters:
-    - *Sf-1": Set auto bandwidth  
-    - *Sf0*: Set bandwidth to 56kHz (see F1)
-    - *Sf1*: Set bandwidth to 72kHz (see F3)
-    - *Sf3*: Set bandwidth to 114kHz (see F6)
-    - *Sf4*: Set bandwidth to 133kHz (see F7)
-    - *Sf5*: Set bandwidth to 151kHz (see F8)
-    - *Sf7*: Set bandwidth to 168kHz (see F9)
-    - *Sf8*: Set bandwidth to 184kHz (see F10)
-    - *Sf9*: Set bandwidth to 200kHz (see F11)
-    - *Sf10*: Set bandwidth to 217kHz (see F12)
-    - *Sf11*: Set bandwidth to 236kHz (see F13)
-    - *Sf12*: Set bandwidth to 254kHz (see F14)
-    - *Sf13*: Set bandwidth to 287kHz (see F15)
-    - *Sf15*: Set bandwidth to 311kHz (see F16)
-    - *Sf26*: Set bandwidth to 64kHz (see F2)
-    - *Sf28*: Set bandwidth to 84kHz (see F4)
-    - *Sf29*: Set bandwidth to 97kHz (see F5)
-
-- *T*: Tuning frequency in kHz, e.g. 87500
-
-- *W*: Bandwidth in kHz (only values from preset (F0...F16) are possible)
-
-- *Y*: Set volume
-
-- *x*: Print out current data: Frequency (T) and  stereo toggle (B)
-
-- *X*: Kind of reset?
-
-- *Z* (Z0..Z3): Switch antennas
-
-Custom addition:
-
-- *L* Play a short beep (e.g. to indicate, that a log entry was made)
+To start, you must set the parameter `--auto` and provide the CSV "database" name,
+e.g. `--database=auto`. If no "database" name is given, the logging is done into
+the default CSV file, called `default.csv`.

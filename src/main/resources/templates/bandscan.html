@@ -9,6 +9,7 @@
     <script src=https://code.jquery.com/jquery-3.7.1.min.js></script>
     <script src=https://cdn.datatables.net/2.0.3/js/dataTables.js></script>
     <link th:href="@{/css/main.css}" rel="stylesheet" />
+    <link href="https://cdn.datatables.net/2.0.5/css/dataTables.dataTables.css" rel="stylesheet"/>
 </head>
 <body>
 <h1>Bandscan</h1>
@@ -18,17 +19,17 @@
 
 <hr>
 
-<table id="bandscan" class="display bandscan" width="50%">
+<table id="bandscan" class="display bandscan compact" style="width: auto;">
     <thead>
         <tr>
-            <th data-field="frequencyKHz">QRG</th>
+            <th data-field="frequencyKHz">Frequency</th>
             <th data-field="rdsPI">PI</th>
             <th data-field="rdsPS">PS</th>
             <th data-field="psErrors">PS Errors</th>
             <th data-field="rdsErrors">RDS Errors</th>
-            <th data-field="signalStrength">signal</th>
+            <th data-field="signalStrength">signa (dBµV)l</th>
             <th data-field="cci">CCI</th>
-            <th data-field="snr">S/N</th>
+            <th data-field="snr">S/N (dB)</th>
         </tr>
     </thead>
 </table>
@@ -49,6 +50,12 @@
                 url: '/bandscan',
                 dataSrc: 'data'
             },
+            columnDefs: [
+                {
+                    render: $.fn.dataTable.render.number(',', '.', 0, ''),
+                    targets: 0
+                }
+            ],
             columns: [
                 { data: 'frequencyKHz'},
                 { data: 'rdsPi'},

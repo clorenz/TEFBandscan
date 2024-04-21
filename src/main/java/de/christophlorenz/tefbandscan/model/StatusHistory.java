@@ -84,15 +84,26 @@ public class StatusHistory {
         return statuspoints >= EVALUATION_LENGTH;
     }
 
-    public Float getAverageSignal() {
-        Pair<Float,Float> signal =
-                calculateMeanAndStandardDeviation(Arrays.stream(statuses).map(Status::signal)
-                        .filter(Objects::nonNull)
-                        .toArray(Float[]::new));
-        return signal.getLeft();
+    public Integer getAverageSignal() {
+        if (statuses == null || statuses.length==0) {
+            return null;
+        }
+        try {
+            Pair<Float, Float> signal =
+                    calculateMeanAndStandardDeviation(Arrays.stream(statuses).map(Status::signal)
+                            .filter(Objects::nonNull)
+                            .toArray(Float[]::new));
+            return signal.getLeft().intValue();
+        } catch (Exception e) {
+            // LOGGER.warn("Average signal: " + e.getMessage() + " on statuses=" + Arrays.asList(statuses));
+        }
+        return null;
     }
 
-    public int getAverageCCI() {
+    public Integer getAverageCCI() {
+        if (statuses == null || statuses.length==0) {
+            return null;
+        }
         Pair<Float, Float> cci =
                 calculateMeanAndStandardDeviation(Arrays.stream(statuses).map(Status::cci)
                         .map(Integer::floatValue)
@@ -101,7 +112,10 @@ public class StatusHistory {
         return cci.getLeft().intValue();
     }
 
-    public int getAverageSnr() {
+    public Integer getAverageSnr() {
+        if (statuses == null || statuses.length==0) {
+            return null;
+        }
         Pair<Float,Float> snr =
                 calculateMeanAndStandardDeviation(Arrays.stream(statuses).map(Status::snr)
                         .filter(Objects::nonNull)
