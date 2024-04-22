@@ -45,6 +45,12 @@ public class RDSHandler {
         // RDS Error rate = hexCharacters 13-14
         rdsErrorRate = Integer.parseInt(line.substring(12,14), 16);
 
+        // FIXME: This is a range of two bits per block: 2 Bits for A, 2 for B, 2 for C and 2 for C.
+        // FIXME: Only value "3" is interesing, because it indicates broken data! Therefor, it is
+        // wrong to treat tdsErrorRate as one integer!
+        //
+        RDSBlockErrors rdsBlockErrors = calculateRdsBlockErrors(line.substring(12,14));
+
         int groupType = calculateGroupType(rdsB);
         int version= calculateVersion(rdsB);
 
@@ -54,7 +60,7 @@ public class RDSHandler {
             case "0A" -> {
                 // TODO: On high RDS errors, write empty PS fields; overwrite them only on low RDS errors
                 // Maybe track for each character pair the RDS error value
-                ps.calculatePS(rdsB, rdsD, rdsErrorRate);
+                ps.calculatePS(rdsB, rdsD, rdsBlockErrors);
             }
         }
     }
