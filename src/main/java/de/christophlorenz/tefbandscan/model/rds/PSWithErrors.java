@@ -39,8 +39,8 @@ public class PSWithErrors {
 
     public String getCssColorAtPosition(int position) {
         return "background-color: rgb(%d%%, %d%%, 0%%);".formatted(
-          getErrorAtPosition(position),
-          100-getErrorAtPosition(position)
+          getErrorAtPosition(position)*33,
+          100-getErrorAtPosition(position)*33
         );
     }
 

@@ -1,10 +1,14 @@
 package de.christophlorenz.tefbandscan.service.handler.rds;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
 public class PI {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(PI.class);
 
     public String pi;
     public Integer piErrors;
@@ -16,12 +20,20 @@ public class PI {
             return;
         }
 
+        int currentPiErrors=0;
         if (rawPi.contains("?")) {
-            piErrors = StringUtils.countMatches(rawPi, "?");
-        } else {
-            piErrors = 0;
+            currentPiErrors = StringUtils.countMatches(rawPi, "?");
         }
-        pi = rawPi.replaceAll("\\?", "");
+
+        if (pi == null || currentPiErrors < piErrors) {
+            pi = rawPi.replaceAll("\\?", "");
+            LOGGER.info("PI=" + pi + " for " + rawPi);
+            piErrors = currentPiErrors;
+        } else {
+            if (!rawPi.replaceAll("\\?","").equals(pi)) {
+                LOGGER.info("Refused to decrease PI from " + pi + " to " + rawPi);
+            }
+        }
     }
 
     public String getPi() {

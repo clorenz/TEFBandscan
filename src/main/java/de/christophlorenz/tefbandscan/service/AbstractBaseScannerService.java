@@ -71,6 +71,17 @@ public abstract class AbstractBaseScannerService implements ScannerService {
         statusHandler.handleFrequency(frequencyInKHz);
     }
 
+    @Override
+    public void setCurrentBandWidth(String currentBandWidth) {
+        if (currentBandWidth == null || currentBandWidth.isBlank()) {
+            return;
+        }
+
+        int bandWidth = Integer.parseInt(currentBandWidth);
+
+        LOGGER.info("Confirmed bandwidth setting to " + (bandWidth/1000) + " kHz");
+    }
+
     public Pair<BandscanEntry,Boolean> generateLog() throws ServiceException {
         try {
             BandscanEntry bandscanEntry = new BandscanEntry(

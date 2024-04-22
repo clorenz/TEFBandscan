@@ -75,6 +75,9 @@ public class LineHandler {
                     lastFrequencyKhz = frequencyKhz;
                 };
             }
+            case "W" -> {
+                scannerService.setCurrentBandWidth(data);
+            }
             default -> LOGGER.warn("Unknown action=" + action + " for line=" + line);
         }
     }

@@ -11,6 +11,9 @@ the firmware with the following changes:
 - Return the S/N ratio
 - Allow to play a short beep when sending the command `L` via Wifi/XDRGtk protocol
 
+If you use the unpatched version, the detection of a "valid" log is more difficult and
+error-prone, and you'll get no acoustic feedback when you scan manually.
+
 Currently, it is only tested to run in IntelliJ IDEA.
 
 ![IDEA](doc/idea.png)

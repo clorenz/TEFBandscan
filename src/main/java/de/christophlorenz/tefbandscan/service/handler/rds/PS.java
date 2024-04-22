@@ -1,7 +1,10 @@
 package de.christophlorenz.tefbandscan.service.handler.rds;
 
 import de.christophlorenz.tefbandscan.model.rds.PSWithErrors;
+import de.christophlorenz.tefbandscan.model.rds.RDSBlockErrors;
 import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -10,6 +13,8 @@ import java.util.List;
 
 @Component
 public class PS extends AbstractRdsHandler {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(PS.class);
 
     PSWithErrors psWithErrors;
 
@@ -22,22 +27,27 @@ public class PS extends AbstractRdsHandler {
         psErrorRate = new Integer[8];
     }
 
-    public void calculatePS(String rdsB, String rdsD, int errorRate) {
+    public void calculatePS(String rdsB, String rdsD, RDSBlockErrors rdsBlockErrors) {
+        if (! (rdsBlockErrors.isValidB() && rdsBlockErrors.isValidD()) ) {
+            return;
+        }
+
+        int psError = 4 * rdsBlockErrors.getErrorsB() + rdsBlockErrors.getErrorsD();
+
         int rdsBValue = Integer.parseInt(rdsB, 16);
         int position = rdsBValue % 4;
         char char1 = (char) Integer.parseInt(rdsD.substring(0,2), 16);
         char char2 = (char) Integer.parseInt(rdsD.substring(2,4), 16);
 
         // Overwrite only when it was either empty, of the error rate was lower than last time
-        if (psErrorRate[position*2] == null || psErrorRate[position*2] > errorRate) {
+        if (psErrorRate[position*2] == null || psErrorRate[position*2] > psError) {
             ps[position * 2] = char1;
             ps[position * 2 + 1] = char2;
-            psErrorRate[position * 2] = errorRate;
-            psErrorRate[position * 2 + 1] = errorRate;
+            psErrorRate[position * 2] = psError;
+            psErrorRate[position * 2 + 1] = psError;
+            psWithErrors.setAtPosition(position*2, char1, psError);
+            psWithErrors.setAtPosition(position*2+1, char2, psError);
         }
-
-        psWithErrors.setAtPosition(position*2, char1, errorRate);
-        psWithErrors.setAtPosition(position*2+1, char2, errorRate);
     }
 
     public void reset() {
@@ -66,7 +76,7 @@ public class PS extends AbstractRdsHandler {
         int sum=0;
         for (int i=0; i<8; i++) {
             if (psErrorRate[i] == null) {
-                sum += 100;
+                sum += 3;
             } else {
                 sum += psErrorRate[i];
             }

@@ -16,4 +16,6 @@ public interface ScannerService {
     void handleFrequencyChange();
 
     void setFrequency(String frequency);
+
+    void setCurrentBandWidth(String currentBandWidth);
 }
