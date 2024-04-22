@@ -35,8 +35,10 @@ public class BandscanEntry implements Comparable<BandscanEntry>{
         if (rdsPs != null && rdsPs.isBlank()) {
             rdsPs = null;
         }
-        this.psErrors = psErrors;
-        this.rdsErrors = rdsErrors;
+        if (rdsPi != null) {
+            this.psErrors = psErrors;
+            this.rdsErrors = rdsErrors;
+        }
         this.signalStrength = signalStrength;
         this.cci = cci;
         this.snr = snr;

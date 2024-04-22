@@ -149,6 +149,7 @@ public abstract class AbstractBaseScannerService implements ScannerService {
         }
 
         if (!Objects.equals(existingBandscanEntry.getRdsPs(), currentStatus.rdsPs()) &&
+                currentStatus.rdsPi() != null &&
                 currentStatus.psErrors() != null &&
                 currentStatus.rdsPs() != null &&
                 (existingBandscanEntry.getPsErrors() == null ||
@@ -158,7 +159,7 @@ public abstract class AbstractBaseScannerService implements ScannerService {
         }
 
 
-        if (Objects.equals(existingBandscanEntry.getRdsPs(), currentStatus.rdsPs()) &&
+        if (currentStatus.rdsPi() != null && Objects.equals(existingBandscanEntry.getRdsPs(), currentStatus.rdsPs()) &&
                 currentStatus.psErrors() != null &&
                 ((existingBandscanEntry.getPsErrors() == null) ||
                 existingBandscanEntry.getPsErrors() > currentStatus.psErrors())) {
