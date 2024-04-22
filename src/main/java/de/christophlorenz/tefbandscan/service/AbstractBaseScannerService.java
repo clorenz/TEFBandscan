@@ -155,14 +155,15 @@ public abstract class AbstractBaseScannerService implements ScannerService {
             return LogQuality.SILENT;
         }
 
-        if ( (existingBandscanEntry.getSignalStrength() < statusHistory.getAverageSignal().intValue()) &&
+        if ( (existingBandscanEntry.getSignalStrength() < statusHistory.getAverageSignal()) &&
                 Objects.equals(existingBandscanEntry.getRdsPs(), currentStatus.rdsPs())){
             LOGGER.info("Detected signal increase (" + existingBandscanEntry.getSignalStrength() + "->" + statusHistory.getAverageSignal() + "). Can log silently.");
             return LogQuality.SILENT;
         }
 
-        if ( (existingBandscanEntry.getSnr() == null || existingBandscanEntry.getSnr() < statusHistory.getAverageSnr()) &&
-                (Objects.equals(existingBandscanEntry.getRdsPs(), currentStatus.rdsPs()))) {
+        if ( (statusHistory.getAverageSnr() != null)
+                && (existingBandscanEntry.getSnr() == null || (existingBandscanEntry.getSnr() < statusHistory.getAverageSnr()))
+                && (Objects.equals(existingBandscanEntry.getRdsPs(), currentStatus.rdsPs())) ) {
             LOGGER.info("Detected S/N increase (" + existingBandscanEntry.getSnr() + "->" + statusHistory.getAverageSnr() + "). Can log silently.");
             return LogQuality.SILENT;
         }

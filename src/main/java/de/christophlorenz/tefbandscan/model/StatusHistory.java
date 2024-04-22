@@ -121,7 +121,12 @@ public class StatusHistory {
                         .filter(Objects::nonNull)
                         .map(Integer::floatValue)
                         .toArray(Float[]::new));
-        return snr.getLeft().intValue();
+        Integer ret = snr.getLeft().intValue();
+        if (ret != null && ret > 0) {
+            return ret;
+        } else {
+            return null;
+        }
     }
 
     public int getAverageRdsErrors() {
