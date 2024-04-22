@@ -14,8 +14,8 @@ import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 import de.christophlorenz.tefbandscan.model.Bandscan;
 import de.christophlorenz.tefbandscan.model.BandscanEntry;
 import de.christophlorenz.tefbandscan.model.CSVBandscanEntry;
-import java.io.FileReader;
-import java.io.Writer;
+
+import java.io.*;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,9 +23,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
@@ -118,7 +115,7 @@ public class CSVBandscanRepository implements BandscanRepository {
                    ))
          );
          return bandscan;
-        } catch (NoSuchFileException e) {
+        } catch (NoSuchFileException | FileNotFoundException e) {
             LOGGER.info("No existing bandscan file " + path + ". Creating new one.");
             return new Bandscan();
         } catch (IOException e) {
