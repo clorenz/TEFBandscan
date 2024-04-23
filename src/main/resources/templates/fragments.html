@@ -1,15 +1,20 @@
-<div id="status" th:fragment="status(time, freq, pi, piErrors, ps, psWithErrors, rdserrors, signal, bandwidth, snr)">
+<div id="status" th:fragment="status(time, freq, pi, piErrors, ps, psWithErrors, rdserrors, signal, avgSignal, bandwidth, snr, avgSnr, cci, avgCci, logged)">
     <div style="font-size: xxx-large; font-family: monospace;">
+    <th:block th:if="${logged}">
+        <span id="freq" th:text="${freq}" style="background-color: lightgreen;">87.5 MHz</span> &nbsp;
+    </th:block>
+    <th:block th:unless="${logged}">
         <span id="freq" th:text="${freq}">87.5 MHz</span> &nbsp;
+    </th:block>
         <span id="pi" th:if="${pi != null}" th:text="${pi}" style="background-color: lightgrey"></span> &nbsp;
         <span id="pi" th:if="${pi == null}" style="background-color: red">&nbsp;&nbsp;&nbsp;&nbsp;</span> &nbsp;
         <span id="ps" th:if="${psWithErrors != null}" th:each="i: ${#numbers.sequence(0,7)}"><span th:text="${psWithErrors.getCharAtPosition(i)}" th:style="${psWithErrors.getCssColorAtPosition(i)}"/></span>&nbsp;
     </div>
     <div style="font-size: large;">
         RDS Errors: <th:block th:if="${rdserrors != null}"><span id="rdserrors" th:text="${rdserrors + '%'}"></span></th:block><th:block th:if="${rdserrors == null}">-</th:block><br/>
-        Signal strength: <span id="signal" th:text="${signal + 'dBµV'}"></span><br/>
-        CCI: <span id="cci" th:text="${cci + '%'}"></span><br/>
-        S/N ratio: <span id="snr" th:text="${snr + 'dB'}"></span><br/>
+        Signal strength: <span id="signal" th:text="${signal + 'dBµV'}"></span>&nbsp;<span th:if="${avgSignal != null}" id="avgSignal" th:text="${'(avg: ' + avgSignal + 'dBµV)'}"></span><br/>
+        CCI: <span id="cci" th:text="${cci + '%'}"></span>&nbsp;<span th:if="${avgCci != null}" id="avgCci" th:text="${'(avg: ' + avgCci + '%)'}"></span><br/>
+        S/N ratio: <span id="snr" th:text="${snr + 'dB'}"></span>&nbsp;<span th:if="${avgSnr != null}" id="avgSnr" th:text="${'(avg: ' + avgSnr + 'dB)'}"></span><br/>
         Bandwidth: <span id="bandwidth" th:text="${bandwidth + 'kHz'}"></span>
     </div>
 </div>

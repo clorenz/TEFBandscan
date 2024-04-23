@@ -10,7 +10,7 @@ import java.util.Objects;
 public class StatusHistory {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StatusHistory.class);
-    private static final int EVALUATION_LENGTH=200;
+    private static final int EVALUATION_LENGTH=100;
 
     private Status[] statuses = new Status[EVALUATION_LENGTH];
     private int statuspoints=0;
@@ -104,29 +104,39 @@ public class StatusHistory {
         if (statuses == null || statuses.length==0) {
             return null;
         }
-        Pair<Float, Float> cci =
-                calculateMeanAndStandardDeviation(Arrays.stream(statuses).map(Status::cci)
-                        .map(Integer::floatValue)
-                        .filter(Objects::nonNull)
-                        .toArray(Float[]::new));
-        return cci.getLeft().intValue();
+        try {
+            Pair<Float, Float> cci =
+                    calculateMeanAndStandardDeviation(Arrays.stream(statuses).map(Status::cci)
+                            .filter(Objects::nonNull)
+                            .map(Integer::floatValue)
+                            .toArray(Float[]::new));
+            return cci.getLeft().intValue();
+        } catch (Exception e) {
+            // ignore
+        }
+        return null;
     }
 
     public Integer getAverageSnr() {
         if (statuses == null || statuses.length==0) {
             return null;
         }
-        Pair<Float,Float> snr =
-                calculateMeanAndStandardDeviation(Arrays.stream(statuses).map(Status::snr)
-                        .filter(Objects::nonNull)
-                        .map(Integer::floatValue)
-                        .toArray(Float[]::new));
-        Integer ret = snr.getLeft().intValue();
-        if (ret != null && ret > 0) {
-            return ret;
-        } else {
-            return null;
+        try {
+            Pair<Float, Float> snr =
+                    calculateMeanAndStandardDeviation(Arrays.stream(statuses).map(Status::snr)
+                            .filter(Objects::nonNull)
+                            .map(Integer::floatValue)
+                            .toArray(Float[]::new));
+            Integer ret = snr.getLeft().intValue();
+            if (ret != null && ret > 0) {
+                return ret;
+            } else {
+                return null;
+            }
+        } catch (Exception e) {
+            // ignore
         }
+        return null;
     }
 
     public int getAverageRdsErrors() {

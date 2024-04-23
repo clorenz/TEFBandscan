@@ -1,9 +1,12 @@
 package de.christophlorenz.tefbandscan.service;
 
 import de.christophlorenz.tefbandscan.model.Status;
+import de.christophlorenz.tefbandscan.model.StatusHistory;
 
 public interface ScannerService {
     Status getCurrentStatus();
+
+    StatusHistory getStatusHistory();
 
     void scan() throws ServiceException;
 

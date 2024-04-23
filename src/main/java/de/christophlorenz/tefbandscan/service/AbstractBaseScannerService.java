@@ -27,6 +27,8 @@ public abstract class AbstractBaseScannerService implements ScannerService {
 
     private Status lastStatus;
 
+    protected boolean logged=false;
+
 
     public AbstractBaseScannerService(BandscanRepository bandscanRepository,
                                       CommunicationRepository communicationRepository,
@@ -114,7 +116,13 @@ public abstract class AbstractBaseScannerService implements ScannerService {
                 statusHandler.getSignalStrength(),
                 statusHandler.getCci(),
                 statusHandler.getBandwidth(),
-                statusHandler.getSnr());
+                statusHandler.getSnr(),
+                logged);
+    }
+
+    @Override
+    public StatusHistory getStatusHistory() {
+        return statusHistory;
     }
 
     protected int psLength(String ps) {

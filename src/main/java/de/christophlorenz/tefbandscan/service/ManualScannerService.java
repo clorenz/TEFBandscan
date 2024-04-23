@@ -41,6 +41,7 @@ public class ManualScannerService extends AbstractBaseScannerService implements 
                 statusHistory.setCurrentStatus(currentStatus);
                 LogQuality logQuality = isLoggable(currentStatus);
                 if (logQuality != LogQuality.NOP) {
+                    logged=true;
                     // We can log!
                     Pair<BandscanEntry, Boolean> logResult = generateLog();
                     LOGGER.info("Logged " + logResult);
@@ -61,6 +62,7 @@ public class ManualScannerService extends AbstractBaseScannerService implements 
         statusHistory.reset();
         rdsHandler.reset();
         unBlinkOnDevice();
+        logged=false;
     }
 
     private void blinkOnDevice()   {

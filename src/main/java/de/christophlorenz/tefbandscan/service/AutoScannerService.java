@@ -58,6 +58,7 @@ public class AutoScannerService extends AbstractBaseScannerService implements Sc
                     logQuality = isLoggable(currentStatus);
                 }
                 if (logQuality != LogQuality.NOP) {
+                    logged=true;
                     // We can log!
                     Pair<BandscanEntry, Boolean> logResult = generateLog();
                     LOGGER.info("Logged " + logResult);
@@ -119,6 +120,7 @@ public class AutoScannerService extends AbstractBaseScannerService implements Sc
         statusHandler.reset();
         statusHistory.reset();
         rdsHandler.reset();
+        logged=false;
     }
 
     private void setFrequency(int frequency) throws ServiceException {
