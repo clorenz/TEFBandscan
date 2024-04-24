@@ -118,6 +118,7 @@ public abstract class AbstractBaseScannerService implements ScannerService {
                 statusHandler.getCci(),
                 statusHandler.getBandwidth(),
                 statusHandler.getSnr(),
+                statusHandler.getOffset(),
                 logged);
     }
 

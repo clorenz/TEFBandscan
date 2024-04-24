@@ -12,6 +12,7 @@ public class StatusHistory {
     private static final Logger LOGGER = LoggerFactory.getLogger(StatusHistory.class);
     private List<Status> statuses = new ArrayList<>();
     private ThresholdsConfig.Thresholds thresholds;
+    public static final int MAX_OFFSET = 25;
 
     public void setThresholds(ThresholdsConfig.Thresholds thresholds) {
         this.thresholds = thresholds;
@@ -130,11 +131,25 @@ public class StatusHistory {
                             .map(Integer::floatValue)
                             .toArray(Float[]::new));
             Integer ret = snr.getLeft().intValue();
-            if (ret != null && ret > 0) {
-                return ret;
-            } else {
-                return null;
-            }
+            return ret;
+        } catch (Exception e) {
+            // ignore
+        }
+        return null;
+    }
+
+    public Integer getAverageOffset() {
+        if (statuses == null || statuses.isEmpty()) {
+            return null;
+        }
+        try {
+            Pair<Float, Float> offset =
+                    calculateMeanAndStandardDeviation(statuses.stream().map(Status::offset)
+                            .filter(Objects::nonNull)
+                            .map(Integer::floatValue)
+                            .toArray(Float[]::new));
+            Integer ret = offset.getLeft().intValue();
+            return ret;
         } catch (Exception e) {
             // ignore
         }
@@ -151,7 +166,7 @@ public class StatusHistory {
     }
 
     public boolean isValidEntry() {
-        //if (getAverageSignal() == null ||
+        // if (getAverageSignal() == null ||
         //        getAverageSnr() == null ||
         //        getAverageCCI() == null) {
         //    return false;
@@ -159,18 +174,23 @@ public class StatusHistory {
         return (
                 isValidSignalStrength()
                         && isValidCci()
-                        && isValidSnr());
+                        && isValidSnr()
+                        && hasNoLargeOffset());
+    }
+
+    private boolean hasNoLargeOffset() {
+        return (getAverageOffset() != null) && (getAverageOffset() <= MAX_OFFSET);
     }
 
     public boolean isValidSignalStrength() {
-        return (getAverageSignal() != null && getAverageSignal() >= thresholds.signal());
+        return (getAverageSignal() != null) && (getAverageSignal() >= thresholds.signal());
     }
 
     public boolean isValidCci() {
-        return (getAverageCCI() != null && getAverageCCI() <= thresholds.cci());
+        return (getAverageCCI() != null) && (getAverageCCI() <= thresholds.cci());
     }
 
     public boolean isValidSnr() {
-        return (getAverageSnr() != null && getAverageSnr() >= thresholds.snr());
+        return (getAverageSnr() != null) && (getAverageSnr() >= thresholds.snr());
     }
 }

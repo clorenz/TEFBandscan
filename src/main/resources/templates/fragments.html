@@ -1,4 +1,4 @@
-<div id="status" th:fragment="status(time, freq, pi, piErrors, ps, psWithErrors, rdserrors, signal, avgSignal, bandwidth, snr, avgSnr, cci, avgCci, logged)">
+<div id="status" th:fragment="status(time, freq, pi, piErrors, ps, psWithErrors, rdserrors, signal, avgSignal, snr, avgSnr, cci, avgCci, averageOffset, logged)">
     <div style="font-size: xxx-large; font-family: monospace;">
     <th:block th:if="${logged}">
         <span id="freq" th:text="${freq}" style="background-color: lightgreen;">87.5 MHz</span> &nbsp;
@@ -15,6 +15,6 @@
         Signal strength: <span id="signal" th:text="${signal + 'dBµV'}"></span>&nbsp;<span th:if="${avgSignal != null}" id="avgSignal" th:text="${'(avg: ' + avgSignal + 'dBµV)'}" th:style="${validSignalStrength ? 'background-color:lightgreen;' : 'background-color:red;'}"></span><br/>
         CCI: <span id="cci" th:text="${cci + '%'}"></span>&nbsp;<span th:if="${avgCci != null}" id="avgCci" th:text="${'(avg: ' + avgCci + '%)'}" th:style="${validCci ? 'background-color:lightgreen;' : 'background-color:red;'}"></span><br/>
         S/N ratio: <span id="snr" th:text="${snr + 'dB'}"></span>&nbsp;<span th:if="${avgSnr != null}" id="avgSnr" th:text="${'(avg: ' + avgSnr + 'dB)'}" th:style="${validSnr ? 'background-color:lightgreen;' : 'background-color:red;'}"></span><br/>
-        Bandwidth: <span id="bandwidth" th:text="${bandwidth + 'kHz'}"></span>
+        Average offset: <span id="offset" th:text="${averageOffset + 'kHz'}" th:style="${averageOffset <= 25 ? 'background-color:lightgreen;' : 'background-color:red;'}"></span><br/>
     </div>
 </div>

@@ -1,10 +1,7 @@
 package de.christophlorenz.tefbandscan.service;
 
 import de.christophlorenz.tefbandscan.config.ThresholdsConfig;
-import de.christophlorenz.tefbandscan.model.BandscanEntry;
-import de.christophlorenz.tefbandscan.model.Bandwidth;
-import de.christophlorenz.tefbandscan.model.LogQuality;
-import de.christophlorenz.tefbandscan.model.Status;
+import de.christophlorenz.tefbandscan.model.*;
 import de.christophlorenz.tefbandscan.repository.BandscanRepository;
 import de.christophlorenz.tefbandscan.repository.CommunicationRepository;
 import de.christophlorenz.tefbandscan.repository.RepositoryException;
@@ -92,6 +89,11 @@ public class AutoScannerService extends AbstractBaseScannerService implements Sc
 
     private boolean definityNoValidSignal() {
         if (statusHistory.hasEnoughData()) {
+            if (statusHistory.getAverageOffset() != null && Math.abs(statusHistory.getAverageOffset()) >= StatusHistory.MAX_OFFSET) {
+                LOGGER.info("Detected average offset of " + statusHistory.getAverageOffset() + "kHz.");
+                return true;
+            }
+
             if (statusHistory.getAverageSnr() < thresholds.snr()) {
                 LOGGER.info("Average S/N=" + statusHistory.getAverageSnr() + " is below threshold=" + thresholds.snr());
                 return true;

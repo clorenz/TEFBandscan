@@ -15,6 +15,7 @@ public class StatusHandler {
     private Integer bandwidth;
     private Integer cci;
     private Integer snr;
+    private Integer offset;
 
     public void handleStatus(String statusContents) {
         stereo = extractStereoFlag(statusContents);
@@ -25,6 +26,7 @@ public class StatusHandler {
         bandwidth = extractBandwidth(statusContents.substring(1));
         cci = extractCCI(statusContents.substring(1));
         snr = extractSNR(statusContents.substring(1));
+        offset = extractOffset(statusContents.substring(1));
     }
 
     public void handleFrequency(String frequencyInKHz) {
@@ -81,12 +83,22 @@ public class StatusHandler {
         }
     }
 
+    private Integer extractOffset(String statusContents) {
+        String[] dataParts = statusContents.split(",");
+        if (dataParts.length > 5) {
+            return Integer.parseInt(dataParts[5]);
+        } else {
+            return null;
+        }
+    }
+
     public void reset() {
         frequencyKhz = null;
         stereo = null;
         signalStrength = null;
         bandwidth = null;
         snr = null;
+        offset = null;
     }
 
     @Override
@@ -98,6 +110,7 @@ public class StatusHandler {
                 ", CCI=" + cci +
                 ", bandwidth=" + bandwidth +
                 ", snr=" + snr +
+                ", offset=" + offset +
                 '}';
     }
 
@@ -119,6 +132,10 @@ public class StatusHandler {
 
     public Integer getSnr() {
         return snr;
+    }
+
+    public Integer getOffset() {
+        return offset;
     }
 
     public void handleFrequency(int frequencyInKHz) {

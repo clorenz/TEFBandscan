@@ -48,7 +48,7 @@ public class AjaxController {
             map.addAttribute("avgSignalStrength", statusHistory.getAverageSignal());
             map.addAttribute("cci", status.cci());
             map.addAttribute("avgCci", statusHistory.getAverageCCI());
-            map.addAttribute("bandwidth", status.bandwidth());
+            //map.addAttribute("bandwidth", status.bandwidth());
             map.addAttribute("snr", status.snr());
             map.addAttribute("avgSnr", statusHistory.getAverageSnr());
             map.addAttribute("rdserrors", status.rdsErrors());
@@ -56,6 +56,7 @@ public class AjaxController {
             map.addAttribute("validSignalStrength", statusHistory.isValidSignalStrength());
             map.addAttribute("validSnr", statusHistory.isValidSnr());
             map.addAttribute("validCci", statusHistory.isValidCci());
+            map.addAttribute("averageOffset", statusHistory.getAverageOffset());
         } else {
             map.addAttribute("freq","---- (please select new frequency) ----");
         }
