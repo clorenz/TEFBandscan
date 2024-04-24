@@ -14,3 +14,15 @@ tef6686:
   hostname: hostname-of-your-radio
   port: 7373
   password: password
+
+thresholds:
+  auto:
+    samples: 50
+    cci: 20
+    snr: 14
+    signal: 15
+  manual:
+    samples: 100
+    cci: 20
+    snr: 14
+    signal: 15

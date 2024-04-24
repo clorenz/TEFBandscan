@@ -1,5 +1,6 @@
 package de.christophlorenz.tefbandscan.service;
 
+import de.christophlorenz.tefbandscan.config.ThresholdsConfig;
 import de.christophlorenz.tefbandscan.model.*;
 import de.christophlorenz.tefbandscan.repository.BandscanRepository;
 import de.christophlorenz.tefbandscan.repository.CommunicationRepository;
@@ -145,7 +146,7 @@ public abstract class AbstractBaseScannerService implements ScannerService {
         return LOGGER;
     }
 
-    protected LogQuality isLoggable(Status currentStatus) {
+    protected LogQuality isLoggable(Status currentStatus, ThresholdsConfig.Thresholds thresholds) {
         if ((statusHandler.getCurrentFrequency() == null) || (!statusHistory.isStable())) {
             return LogQuality.NOP;
         }

@@ -1,5 +1,6 @@
 package de.christophlorenz.tefbandscan.service;
 
+import de.christophlorenz.tefbandscan.config.ThresholdsConfig;
 import de.christophlorenz.tefbandscan.model.BandscanEntry;
 import de.christophlorenz.tefbandscan.model.Bandwidth;
 import de.christophlorenz.tefbandscan.model.LogQuality;
@@ -14,6 +15,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
@@ -24,19 +26,23 @@ public class AutoScannerService extends AbstractBaseScannerService implements Sc
     private static final long TIMEOUT_MILLIS = 30000;// 30 seconds
     private static final int BAND_START = 87500;
     private static final int BAND_END=108000;
-    private static final int MIN_VALID_SNR = 15;
 
     private Status currentStatus;
+    private final ThresholdsConfig.Thresholds thresholds;
     private long lastFrequencyChangeTime=0;
+
 
     public AutoScannerService(
             @Lazy @Qualifier("currentBandscanRepository") BandscanRepository bandscanRepository,
             @Lazy @Qualifier("currentCommunicationRepository") CommunicationRepository communicationRepository,
             RDSHandler rdsHandler,
             StatusHandler statusHandler,
-            LineHandler lineHandler) {
+            LineHandler lineHandler,
+            ThresholdsConfig thresholdsConfig) {
         super(bandscanRepository, communicationRepository, lineHandler, rdsHandler, statusHandler);
         lineHandler.setScannerService(this);
+        this.thresholds = thresholdsConfig.auto();
+        statusHistory.setThresholds(thresholds);
     }
 
     @Override
@@ -54,8 +60,8 @@ public class AutoScannerService extends AbstractBaseScannerService implements Sc
                 Status currentStatus = getCurrentStatus();
                 statusHistory.setCurrentStatus(currentStatus);
                 LogQuality logQuality = LogQuality.NOP;
-                if (isValidEntry()) {
-                    logQuality = isLoggable(currentStatus);
+                if (statusHistory.isValidEntry()) {
+                    logQuality = isLoggable(currentStatus, thresholds);
                 }
                 if (logQuality != LogQuality.NOP) {
                     logged=true;
@@ -85,7 +91,13 @@ public class AutoScannerService extends AbstractBaseScannerService implements Sc
     }
 
     private boolean definityNoValidSignal() {
-        return statusHistory.hasEnoughData() && statusHistory.getAverageSnr() < MIN_VALID_SNR;
+        if (statusHistory.hasEnoughData()) {
+            if (statusHistory.getAverageSnr() < thresholds.snr()) {
+                LOGGER.info("Average S/N=" + statusHistory.getAverageSnr() + " is below threshold=" + thresholds.snr());
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean isPerfectLog(BandscanEntry bandscanEntry) {
@@ -104,15 +116,6 @@ public class AutoScannerService extends AbstractBaseScannerService implements Sc
         setFrequency(frequency);
         handleFrequencyChange();
         return frequency;
-    }
-
-    private boolean isValidEntry() {
-        if (statusHistory.getAverageSignal() == null ||
-            statusHistory.getAverageSnr() == null ||
-            statusHistory.getAverageCCI() == null) {
-            return false;
-        }
-        return (statusHistory.getAverageSignal()>15 && statusHistory.getAverageCCI()<20 && statusHistory.getAverageSnr()>=MIN_VALID_SNR);
     }
 
     @Override

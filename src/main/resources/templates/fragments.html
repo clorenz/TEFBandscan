@@ -12,9 +12,9 @@
     </div>
     <div style="font-size: large;">
         RDS Errors: <th:block th:if="${rdserrors != null}"><span id="rdserrors" th:text="${rdserrors + '%'}"></span></th:block><th:block th:if="${rdserrors == null}">-</th:block><br/>
-        Signal strength: <span id="signal" th:text="${signal + 'dBµV'}"></span>&nbsp;<span th:if="${avgSignal != null}" id="avgSignal" th:text="${'(avg: ' + avgSignal + 'dBµV)'}"></span><br/>
-        CCI: <span id="cci" th:text="${cci + '%'}"></span>&nbsp;<span th:if="${avgCci != null}" id="avgCci" th:text="${'(avg: ' + avgCci + '%)'}"></span><br/>
-        S/N ratio: <span id="snr" th:text="${snr + 'dB'}"></span>&nbsp;<span th:if="${avgSnr != null}" id="avgSnr" th:text="${'(avg: ' + avgSnr + 'dB)'}"></span><br/>
+        Signal strength: <span id="signal" th:text="${signal + 'dBµV'}"></span>&nbsp;<span th:if="${avgSignal != null}" id="avgSignal" th:text="${'(avg: ' + avgSignal + 'dBµV)'}" th:style="${validSignalStrength ? 'background-color:lightgreen;' : 'background-color:red;'}"></span><br/>
+        CCI: <span id="cci" th:text="${cci + '%'}"></span>&nbsp;<span th:if="${avgCci != null}" id="avgCci" th:text="${'(avg: ' + avgCci + '%)'}" th:style="${validCci ? 'background-color:lightgreen;' : 'background-color:red;'}"></span><br/>
+        S/N ratio: <span id="snr" th:text="${snr + 'dB'}"></span>&nbsp;<span th:if="${avgSnr != null}" id="avgSnr" th:text="${'(avg: ' + avgSnr + 'dB)'}" th:style="${validSnr ? 'background-color:lightgreen;' : 'background-color:red;'}"></span><br/>
         Bandwidth: <span id="bandwidth" th:text="${bandwidth + 'kHz'}"></span>
     </div>
 </div>

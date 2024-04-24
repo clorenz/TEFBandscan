@@ -1,35 +1,37 @@
 package de.christophlorenz.tefbandscan.model;
 
+import de.christophlorenz.tefbandscan.config.ThresholdsConfig;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
-import java.util.Objects;
+import java.util.*;
 
 public class StatusHistory {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(StatusHistory.class);
-    private static final int EVALUATION_LENGTH=100;
+    private List<Status> statuses = new ArrayList<>();
+    private ThresholdsConfig.Thresholds thresholds;
 
-    private Status[] statuses = new Status[EVALUATION_LENGTH];
-    private int statuspoints=0;
+    public void setThresholds(ThresholdsConfig.Thresholds thresholds) {
+        this.thresholds = thresholds;
+        LOGGER.info("Setting thresholds to " + thresholds);
+    }
 
     public void setCurrentStatus(Status currentStatus) {
-        // Shift existing statuses
-        System.arraycopy(statuses, 0, statuses, 1, statuses.length-1);
-        statuses[0] = currentStatus;
-        statuspoints++;
+        statuses.add(0, currentStatus);
+        if (statuses.size() > thresholds.samples()) {
+            statuses.remove(statuses.size() -1);
+        }
     }
 
     public void reset() {
-        statuses = new Status[EVALUATION_LENGTH];
-        statuspoints=0;
+        statuses.clear();
     }
 
     public boolean isStable() {
         // Standardabweichung von Signalstärke und Bandbreite berechnen
-        if (statuspoints < EVALUATION_LENGTH) {
+        if (statuses.size() < thresholds.samples()) {
             return false;
         }
 
@@ -45,7 +47,7 @@ public class StatusHistory {
          */
 
         Pair<Float,Float> signal =
-                calculateMeanAndStandardDeviation(Arrays.stream(statuses).map(Status::signal)
+                calculateMeanAndStandardDeviation(statuses.stream().map(Status::signal)
                         .filter(Objects::nonNull)
                         .toArray(Float[]::new));
 
@@ -81,16 +83,16 @@ public class StatusHistory {
     }
 
     public boolean hasEnoughData() {
-        return statuspoints >= EVALUATION_LENGTH;
+        return statuses.size() >= thresholds.samples();
     }
 
     public Integer getAverageSignal() {
-        if (statuses == null || statuses.length==0) {
+        if (statuses == null || statuses.isEmpty()) {
             return null;
         }
         try {
             Pair<Float, Float> signal =
-                    calculateMeanAndStandardDeviation(Arrays.stream(statuses).map(Status::signal)
+                    calculateMeanAndStandardDeviation(statuses.stream().map(Status::signal)
                             .filter(Objects::nonNull)
                             .toArray(Float[]::new));
             return signal.getLeft().intValue();
@@ -101,12 +103,12 @@ public class StatusHistory {
     }
 
     public Integer getAverageCCI() {
-        if (statuses == null || statuses.length==0) {
+        if (statuses == null || statuses.isEmpty()) {
             return null;
         }
         try {
             Pair<Float, Float> cci =
-                    calculateMeanAndStandardDeviation(Arrays.stream(statuses).map(Status::cci)
+                    calculateMeanAndStandardDeviation(statuses.stream().map(Status::cci)
                             .filter(Objects::nonNull)
                             .map(Integer::floatValue)
                             .toArray(Float[]::new));
@@ -118,12 +120,12 @@ public class StatusHistory {
     }
 
     public Integer getAverageSnr() {
-        if (statuses == null || statuses.length==0) {
+        if (statuses == null || statuses.isEmpty()) {
             return null;
         }
         try {
             Pair<Float, Float> snr =
-                    calculateMeanAndStandardDeviation(Arrays.stream(statuses).map(Status::snr)
+                    calculateMeanAndStandardDeviation(statuses.stream().map(Status::snr)
                             .filter(Objects::nonNull)
                             .map(Integer::floatValue)
                             .toArray(Float[]::new));
@@ -141,10 +143,34 @@ public class StatusHistory {
 
     public int getAverageRdsErrors() {
         Pair<Float,Float> rdsErrors =
-            calculateMeanAndStandardDeviation(Arrays.stream(statuses).map(Status::rdsErrors)
+            calculateMeanAndStandardDeviation(statuses.stream().map(Status::rdsErrors)
                 .filter(Objects::nonNull)
                 .map(Integer::floatValue)
                 .toArray(Float[]::new));
         return rdsErrors.getLeft().intValue();
+    }
+
+    public boolean isValidEntry() {
+        //if (getAverageSignal() == null ||
+        //        getAverageSnr() == null ||
+        //        getAverageCCI() == null) {
+        //    return false;
+        //}
+        return (
+                isValidSignalStrength()
+                        && isValidCci()
+                        && isValidSnr());
+    }
+
+    public boolean isValidSignalStrength() {
+        return (getAverageSignal() != null && getAverageSignal() >= thresholds.signal());
+    }
+
+    public boolean isValidCci() {
+        return (getAverageCCI() != null && getAverageCCI() <= thresholds.cci());
+    }
+
+    public boolean isValidSnr() {
+        return (getAverageSnr() != null && getAverageSnr() >= thresholds.snr());
     }
 }

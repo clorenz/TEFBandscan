@@ -1,5 +1,6 @@
 package de.christophlorenz.tefbandscan.service;
 
+import de.christophlorenz.tefbandscan.config.ThresholdsConfig;
 import de.christophlorenz.tefbandscan.model.*;
 import de.christophlorenz.tefbandscan.repository.BandscanRepository;
 import de.christophlorenz.tefbandscan.repository.CommunicationRepository;
@@ -7,11 +8,13 @@ import de.christophlorenz.tefbandscan.repository.RepositoryException;
 import de.christophlorenz.tefbandscan.service.handler.LineHandler;
 import de.christophlorenz.tefbandscan.service.handler.RDSHandler;
 import de.christophlorenz.tefbandscan.service.handler.StatusHandler;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
@@ -20,13 +23,18 @@ public class ManualScannerService extends AbstractBaseScannerService implements 
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ManualScannerService.class);
 
+    private final ThresholdsConfig thresholdsConfig;
+
     public ManualScannerService(@Lazy @Qualifier("currentBandscanRepository") BandscanRepository bandscanRepository,
                                 @Lazy @Qualifier("currentCommunicationRepository") CommunicationRepository communicationRepository,
                                 RDSHandler rdsHandler,
                                 StatusHandler statusHandler,
-                                LineHandler lineHandler) {
+                                LineHandler lineHandler,
+                                ThresholdsConfig thresholdsConfig) {
         super(bandscanRepository, communicationRepository, lineHandler, rdsHandler, statusHandler);
+        this.thresholdsConfig = thresholdsConfig;
         lineHandler.setScannerService(this);
+        statusHistory.setThresholds(thresholdsConfig.manual());
     }
 
     @Override
@@ -39,7 +47,7 @@ public class ManualScannerService extends AbstractBaseScannerService implements 
                 lineHandler.handle(communicationRepository.read());
                 Status currentStatus = getCurrentStatus();
                 statusHistory.setCurrentStatus(currentStatus);
-                LogQuality logQuality = isLoggable(currentStatus);
+                LogQuality logQuality = isLoggable(currentStatus, thresholdsConfig.manual());
                 if (logQuality != LogQuality.NOP) {
                     logged=true;
                     // We can log!

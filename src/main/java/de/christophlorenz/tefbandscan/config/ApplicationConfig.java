@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 
 import java.io.Serial;
 import java.util.List;
@@ -27,7 +28,8 @@ public class ApplicationConfig {
     private final SerialCommunicationRepository serialCommunicationRepository;
     private final TCPCommunicationRepository tcpCommunicationRepository;
 
-    public ApplicationConfig(ApplicationArguments applicationArguments, AutoScannerService autoScannerService, ManualScannerService manualScannerService,
+    public ApplicationConfig(
+            ApplicationArguments applicationArguments, AutoScannerService autoScannerService, ManualScannerService manualScannerService,
                              CSVBandscanRepository csvBandscanRepository,
                              SerialCommunicationRepository serialCommunicationRepository,
                              TCPCommunicationRepository tcpCommunicationRepository) {

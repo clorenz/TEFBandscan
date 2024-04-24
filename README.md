@@ -43,6 +43,13 @@ and password, e.g.
 java -Dtef6686.hostname=localhost -Dtef6686.port=7373 -Dtef6686.password=password -jar target/TEFBandscan-1.0.0-SNAPSHOT.jar
 ```
 
+With the parameters `thresholds.auto.signal`, `thresholds.auto.snr`, `thresholds.auto.cci`,
+`thresholds.manual.signal`, `thresholds.manual.snr` and `thresholds.manual.cci`, you can se the
+minimum (or in case of CCI maximum) limit, below (or in case of CCI above) which no log is made.
+
+Use them with `-D` prefix, e.g. `-Dthresholds.auto.signal=10` to ensure, that the automatic scanner
+only logs frequencies with a signal of at least 10dBµV.
+
 ## Usage
 
 Currently, it is not yet tested run it outside an IDE, but you can configure the
