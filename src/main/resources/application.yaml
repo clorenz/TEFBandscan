@@ -6,9 +6,8 @@ server:
   port: 6686
 
 spring:
-  config:
-    activate:
-      on-profile: production
+  profiles:
+    active: production
 
 tef6686:
   hostname: hostname-of-your-radio
