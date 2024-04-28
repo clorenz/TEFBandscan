@@ -1,6 +1,7 @@
 package de.christophlorenz.tefbandscan.controller;
 
 import de.christophlorenz.tefbandscan.model.DataTableResponse;
+import de.christophlorenz.tefbandscan.model.DisplayStatus;
 import de.christophlorenz.tefbandscan.model.Status;
 import de.christophlorenz.tefbandscan.model.StatusHistory;
 import de.christophlorenz.tefbandscan.repository.BandscanRepository;
@@ -38,35 +39,20 @@ public class AjaxController {
         Status status = scannerService.getCurrentStatus();
         StatusHistory statusHistory = scannerService.getStatusHistory();
         Integer frequency = status != null ? status.frequency() : null;
-        if (frequency != null) {
-            map.addAttribute("freq", String.format("%.02f MHz", ((float) frequency / 1000f)));
-            map.addAttribute("pi", status.rdsPi());
-            map.addAttribute("piErrors", status.piErrors());
-            map.addAttribute("ps", status.rdsPs());
-            map.addAttribute("psWithErrors", status.psWithErrors());
-            map.addAttribute("signal", status.signal() != null ? Math.round(status.signal()) : "");
-            map.addAttribute("avgSignalStrength", statusHistory.getAverageSignal());
-            map.addAttribute("cci", status.cci());
-            map.addAttribute("avgCci", statusHistory.getAverageCCI());
+
+        map.addAttribute("displayStatus", new DisplayStatus(status, statusHistory));
+
             //map.addAttribute("bandwidth", status.bandwidth());
-            map.addAttribute("snr", status.snr());
-            map.addAttribute("avgSnr", statusHistory.getAverageSnr());
-            map.addAttribute("rdserrors", status.rdsErrors());
             map.addAttribute("logged", status.logged());
-            map.addAttribute("validSignalStrength", statusHistory.isValidSignalStrength());
-            map.addAttribute("validSnr", statusHistory.isValidSnr());
-            map.addAttribute("validCci", statusHistory.isValidCci());
-            map.addAttribute("averageOffset", statusHistory.getAverageOffset());
-        } else {
-            map.addAttribute("freq","---- (please select new frequency) ----");
-        }
+
 
         return "bandscan :: #status";
     }
 
     @GetMapping("/bandscan")
     @ResponseBody
-    public DataTableResponse getBandscan() {
+    public DataTableResponse getBandscan(Model map) {
+        map.addAttribute("scanStart", scannerService.getScanStart());
         return new DataTableResponse(bandscanRepository.getEntries(), bandscanRepository.getEntries().size());
     }
 }

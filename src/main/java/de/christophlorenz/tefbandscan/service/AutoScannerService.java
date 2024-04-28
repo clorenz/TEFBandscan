@@ -16,6 +16,8 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
+
 @Service
 public class AutoScannerService extends AbstractBaseScannerService implements ScannerService {
 
@@ -44,6 +46,7 @@ public class AutoScannerService extends AbstractBaseScannerService implements Sc
 
     @Override
     public void scan() throws ServiceException {
+        scanStart = new Date();
         setBandwidth(Bandwidth.BANDWIDTH_133);
         int frequency=87500;
         lastFrequencyChangeTime= System.currentTimeMillis();
@@ -96,6 +99,11 @@ public class AutoScannerService extends AbstractBaseScannerService implements Sc
 
             if (statusHistory.getAverageSnr() < thresholds.snr()) {
                 LOGGER.info("Average S/N=" + statusHistory.getAverageSnr() + " is below threshold=" + thresholds.snr());
+                return true;
+            }
+
+            if (!statusHistory.hasTrueModulation()) {
+                LOGGER.info("Modulation too high average: " + statusHistory.getAverageModulation());
                 return true;
             }
         }

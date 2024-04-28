@@ -7,7 +7,9 @@
     <title>TEFBandscan</title>
     <script src="http://localhost:6686/livereload.js"></script>
     <script src=https://code.jquery.com/jquery-3.7.1.min.js></script>
-    <script src=https://cdn.datatables.net/2.0.3/js/dataTables.js></script>
+    <script src=https://cdn.datatables.net/2.0.5/js/dataTables.js></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
+    <script src="https://cdn.datatables.net/plug-ins/2.0.5/dataRender/datetime.js"></script>
     <link th:href="@{/css/main.css}" rel="stylesheet" />
     <link href="https://cdn.datatables.net/2.0.5/css/dataTables.dataTables.css" rel="stylesheet"/>
 </head>
@@ -15,7 +17,7 @@
 <h1>Bandscan</h1>
 
 
-<div id="status" th:replace="~{fragments :: status(${time},${freq},${pi},${piErrors},${ps},${psWithErrors},${rdserrors},${signal},${avgSignalStrength},${snr},${avgSnr},${cci},${avgCci},${averageOffset},${logged})}"></div>
+<div id="status" th:replace="~{fragments :: status(${time},${displayStatus},${logged})}"></div>
 
 <hr>
 
@@ -30,12 +32,13 @@
             <th data-field="signalStrength">signal (dBµV)</th>
             <th data-field="cci">CCI</th>
             <th data-field="snr">S/N (dB)</th>
+            <th data-field="timestamp">timestamp</th>
         </tr>
     </thead>
 </table>
 
 
-<script>
+<script th:inline="javascript">
     function updateTime() {
         $.get("/status").done(function (fragment) { // get from controller
             $("#status").replaceWith(fragment); // update snippet of page
@@ -44,6 +47,7 @@
     var interval = setInterval(updateTime, 100);
 
     $(document).ready( function () {
+        var scanStart = Date.parse(/*[[${scanStart}]]*/);
         var table = $('#bandscan').DataTable( {
             paging: false,
             ajax: {
@@ -53,8 +57,8 @@
             columnDefs: [
                 {
                     render: $.fn.dataTable.render.number(',', '.', 0, ''),
-                    targets: 0
-                }
+                    targets: 0,
+                },
             ],
             columns: [
                 { data: 'frequencyKHz'},
@@ -64,8 +68,18 @@
                 { data: 'rdsErrors' },
                 { data: 'signalStrength'},
                 { data: 'cci'},
-                { data: 'snr'}
-            ]
+                { data: 'snr'},
+                { data: 'timestamp'}
+            ],
+            rowCallback: function ( row, data ) {
+                if (Date.parse(data.timestamp) >= scanStart) {
+                    $(row).css('background-color', 'rgba(0, 255, 0, 0.2)');
+                    $(row).css('font-weight', 'bold');
+                } else {
+                    $(row).css('background-color', '');
+                    $(row).css('font-weight', 'normal');
+                }
+            }
         });
         setInterval(function () {
             table.ajax.reload();

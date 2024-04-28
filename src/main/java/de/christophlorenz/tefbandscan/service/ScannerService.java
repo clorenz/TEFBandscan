@@ -3,6 +3,8 @@ package de.christophlorenz.tefbandscan.service;
 import de.christophlorenz.tefbandscan.model.Status;
 import de.christophlorenz.tefbandscan.model.StatusHistory;
 
+import java.util.Date;
+
 public interface ScannerService {
     Status getCurrentStatus();
 
@@ -21,4 +23,6 @@ public interface ScannerService {
     void setFrequency(String frequency);
 
     void setCurrentBandWidth(String currentBandWidth);
+
+    Date getScanStart();
 }

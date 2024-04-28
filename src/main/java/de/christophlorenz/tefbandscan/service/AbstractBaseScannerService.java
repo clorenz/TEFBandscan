@@ -11,7 +11,9 @@ import de.christophlorenz.tefbandscan.service.handler.StatusHandler;
 import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
+import java.util.Date;
 import java.util.Objects;
 
 public abstract class AbstractBaseScannerService implements ScannerService {
@@ -27,6 +29,7 @@ public abstract class AbstractBaseScannerService implements ScannerService {
     protected final StatusHistory statusHistory;
 
     private Status lastStatus;
+    protected Date scanStart;
 
     protected boolean logged=false;
 
@@ -71,7 +74,9 @@ public abstract class AbstractBaseScannerService implements ScannerService {
             frequencyInKHz *= 10;
         }
 
+        MDC.put("freq", String.format("%03.3f", (float)frequencyInKHz / 1000f));
         statusHandler.handleFrequency(frequencyInKHz);
+
     }
 
     @Override
@@ -119,6 +124,7 @@ public abstract class AbstractBaseScannerService implements ScannerService {
                 statusHandler.getBandwidth(),
                 statusHandler.getSnr(),
                 statusHandler.getOffset(),
+                statusHandler.getModulation(),
                 logged);
     }
 
@@ -203,4 +209,8 @@ public abstract class AbstractBaseScannerService implements ScannerService {
         return LogQuality.NOP;
     }
 
+    @Override
+    public Date getScanStart() {
+        return scanStart;
+    }
 }

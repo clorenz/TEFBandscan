@@ -3,6 +3,7 @@ package de.christophlorenz.tefbandscan.service.handler;
 import de.christophlorenz.tefbandscan.service.ScannerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -68,6 +69,7 @@ public class LineHandler {
             case "S" -> scannerService.handleStatus(data);
             case "T" -> {
                 int frequencyKhz = Integer.parseInt(data);
+                MDC.put("freq", String.format("%03.3f", (float)frequencyKhz / 1000f));
                 if (frequencyKhz != lastFrequencyKhz) {
                     LOGGER.info("T: Handle frequency changed for data=" + data);
                     scannerService.handleFrequencyChange();

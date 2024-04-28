@@ -1,20 +1,23 @@
-<div id="status" th:fragment="status(time, freq, pi, piErrors, ps, psWithErrors, rdserrors, signal, avgSignal, snr, avgSnr, cci, avgCci, averageOffset, logged)">
-    <div style="font-size: xxx-large; font-family: monospace;">
-    <th:block th:if="${logged}">
-        <span id="freq" th:text="${freq}" style="background-color: lightgreen;">87.5 MHz</span> &nbsp;
+<div id="status" th:fragment="status(time, displayStatus, logged)">
+    <th:block th:if="${displayStatus != null}">
+        <div style="font-size: xxx-large; font-family: monospace;">
+        <th:block th:if="${logged}">
+            <span id="freq" th:text="${displayStatus.getFrequency()}" style="background-color: lightgreen;">87.5 MHz</span> &nbsp;
+        </th:block>
+        <th:block th:unless="${logged}">
+            <span id="freq" th:text="${displayStatus.getFrequency()}">87.5 MHz</span> &nbsp;
+        </th:block>
+            <span id="pi" th:if="${displayStatus.getPi() != null}" th:text="${displayStatus.getPi()}" style="background-color: lightgrey"></span> &nbsp;
+            <span id="pi" th:if="${displayStatus.getPi() == null}" style="background-color: red">&nbsp;&nbsp;&nbsp;&nbsp;</span> &nbsp;
+            <span id="ps" th:if="${displayStatus.getPsWithErrors() != null}" th:each="i: ${#numbers.sequence(0,7)}"><span th:text="${displayStatus.getPsWithErrors().getCharAtPosition(i)}" th:style="${displayStatus.getPsWithErrors().getCssColorAtPosition(i)}"/></span>&nbsp;
+        </div>
+        <div style="font-size: large;">
+            RDS Errors: <th:block th:if="${displayStatus.getRdsErrors() != null}"><span id="rdserrors" th:text="${displayStatus.getRdsErrors() + '%'}"></span></th:block><th:block th:if="${displayStatus.getRdsErrors() == null}">-</th:block><br/>
+            Signal strength: <span id="signal" th:text="${displayStatus.getSignal() + 'dBµV'}"></span>&nbsp;<span th:if="${displayStatus.getAverageSignal() != null}" id="avgSignal" th:text="${'(avg: ' + displayStatus.getAverageSignal() + 'dBµV)'}" th:style="${displayStatus.isValidSignalStrength() ? 'background-color:lightgreen;' : 'background-color:red;'}"></span><br/>
+            CCI: <span id="cci" th:text="${displayStatus.getCci() + '%'}"></span>&nbsp;<span th:if="${displayStatus.getAverageCci() != null}" id="avgCci" th:text="${'(avg: ' + displayStatus.getAverageCci() + '%)'}" th:style="${displayStatus.isValidCci() ? 'background-color:lightgreen;' : 'background-color:red;'}"></span><br/>
+            S/N ratio: <span id="snr" th:text="${displayStatus.getSnr() + 'dB'}"></span>&nbsp;<span th:if="${displayStatus.getAverageSnr() != null}" id="avgSnr" th:text="${'(avg: ' + displayStatus.getAverageSnr() + 'dB)'}" th:style="${displayStatus.isValidSnr() ? 'background-color:lightgreen;' : 'background-color:red;'}"></span><br/>
+            Average Modulation: <span id="modulation" th:if="${displayStatus.getAverageModulation() != null}" th:text="${displayStatus.getAverageModulation() + 'kHz'}" th:style="${displayStatus.isValidModulation() ? 'background-color:lightgreen;' : 'background-color:red;'}"></span><br/>
+            Average offset: <span th:if="${displayStatus.getAverageOffset() != null}" id="offset" th:text="${displayStatus.getAverageOffset() + 'kHz'}" th:style="${displayStatus.isValidOffset() ? 'background-color:lightgreen;' : 'background-color:red;'}"></span><span th:if="${displayStatus.getOffset() == null}">-</span><br/>
+        </div>
     </th:block>
-    <th:block th:unless="${logged}">
-        <span id="freq" th:text="${freq}">87.5 MHz</span> &nbsp;
-    </th:block>
-        <span id="pi" th:if="${pi != null}" th:text="${pi}" style="background-color: lightgrey"></span> &nbsp;
-        <span id="pi" th:if="${pi == null}" style="background-color: red">&nbsp;&nbsp;&nbsp;&nbsp;</span> &nbsp;
-        <span id="ps" th:if="${psWithErrors != null}" th:each="i: ${#numbers.sequence(0,7)}"><span th:text="${psWithErrors.getCharAtPosition(i)}" th:style="${psWithErrors.getCssColorAtPosition(i)}"/></span>&nbsp;
-    </div>
-    <div style="font-size: large;">
-        RDS Errors: <th:block th:if="${rdserrors != null}"><span id="rdserrors" th:text="${rdserrors + '%'}"></span></th:block><th:block th:if="${rdserrors == null}">-</th:block><br/>
-        Signal strength: <span id="signal" th:text="${signal + 'dBµV'}"></span>&nbsp;<span th:if="${avgSignal != null}" id="avgSignal" th:text="${'(avg: ' + avgSignal + 'dBµV)'}" th:style="${validSignalStrength ? 'background-color:lightgreen;' : 'background-color:red;'}"></span><br/>
-        CCI: <span id="cci" th:text="${cci + '%'}"></span>&nbsp;<span th:if="${avgCci != null}" id="avgCci" th:text="${'(avg: ' + avgCci + '%)'}" th:style="${validCci ? 'background-color:lightgreen;' : 'background-color:red;'}"></span><br/>
-        S/N ratio: <span id="snr" th:text="${snr + 'dB'}"></span>&nbsp;<span th:if="${avgSnr != null}" id="avgSnr" th:text="${'(avg: ' + avgSnr + 'dB)'}" th:style="${validSnr ? 'background-color:lightgreen;' : 'background-color:red;'}"></span><br/>
-        Average offset: <span id="offset" th:text="${averageOffset + 'kHz'}" th:style="${averageOffset <= 25 ? 'background-color:lightgreen;' : 'background-color:red;'}"></span><br/>
-    </div>
 </div>

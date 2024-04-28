@@ -16,7 +16,7 @@ tef6686:
 
 thresholds:
   auto:
-    samples: 50
+    samples: 100
     cci: 20
     snr: 14
     signal: 15

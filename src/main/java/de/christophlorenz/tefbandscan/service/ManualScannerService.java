@@ -18,6 +18,8 @@ import org.springframework.context.annotation.DependsOn;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
+
 @Service
 public class ManualScannerService extends AbstractBaseScannerService implements ScannerService {
 
@@ -39,6 +41,7 @@ public class ManualScannerService extends AbstractBaseScannerService implements 
 
     @Override
     public void scan() throws ServiceException {
+        scanStart = new Date();
         setBandwidth(Bandwidth.BANDWIDTH_133);
 
         boolean interrupted=false;

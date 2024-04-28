@@ -99,6 +99,7 @@ public class ApplicationConfig {
                     try {
                         Thread.sleep(1000);
                     } catch (InterruptedException ignore) {
+                        Runtime.getRuntime().halt(2);
                     }
                 }
             }

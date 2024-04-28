@@ -14,6 +14,13 @@ public class StatusHistory {
     private ThresholdsConfig.Thresholds thresholds;
     public static final int MAX_OFFSET = 25;
 
+    private Pair<Float,Float> cci = null;
+    private Pair<Float,Float> modulation = null;
+    private Pair<Float,Float> offset = null;
+    private Pair<Float,Float> rdsErrors =  null;
+    private Pair<Float,Float> signal = null;
+    private Pair<Float,Float> snr = null;
+
     public void setThresholds(ThresholdsConfig.Thresholds thresholds) {
         this.thresholds = thresholds;
         LOGGER.info("Setting thresholds to " + thresholds);
@@ -24,36 +31,154 @@ public class StatusHistory {
         if (statuses.size() > thresholds.samples()) {
             statuses.remove(statuses.size() -1);
         }
+
+        if (hasEnoughData()) {
+            // Do the calculations
+
+            // Signal
+            signal =
+                    calculateMeanAndStandardDeviation(statuses.stream().map(Status::signal)
+                            .filter(Objects::nonNull)
+                            .toArray(Float[]::new));
+
+            // CCI
+            cci =
+                    calculateMeanAndStandardDeviation(statuses.stream().map(Status::cci)
+                            .filter(Objects::nonNull)
+                            .map(Integer::floatValue)
+                            .toArray(Float[]::new));
+
+            // SNR
+            snr =
+                    calculateMeanAndStandardDeviation(statuses.stream().map(Status::snr)
+                            .filter(Objects::nonNull)
+                            .map(Integer::floatValue)
+                            .toArray(Float[]::new));
+
+            // Offset
+            offset =
+                    calculateMeanAndStandardDeviation(statuses.stream().map(Status::offset)
+                            .filter(Objects::nonNull)
+                            .map(Integer::floatValue)
+                            .toArray(Float[]::new));
+
+            // RDS errors
+            rdsErrors =
+                    calculateMeanAndStandardDeviation(statuses.stream().map(Status::rdsErrors)
+                            .filter(Objects::nonNull)
+                            .map(Integer::floatValue)
+                            .toArray(Float[]::new));
+
+            // Modulation
+            modulation =
+                    calculateMeanAndStandardDeviation(statuses.stream().map(Status::modulation)
+                            .filter(Objects::nonNull)
+                            .map(Integer::floatValue)
+                            .toArray(Float[]::new));
+        }
     }
 
     public void reset() {
         statuses.clear();
+        cci = null;
+        offset = null;
+        signal = null;
+        snr = null;
+        rdsErrors = null;
+        modulation = null;
     }
 
     public boolean isStable() {
         // Standardabweichung von Signalstärke und Bandbreite berechnen
-        if (statuses.size() < thresholds.samples()) {
+        if (!hasEnoughData()) {
             return false;
+        }
+        return /*(bandwidth.getRight() < 0.1) &&*/ (signal.getRight() < 2.0);
+    }
+
+    public boolean hasEnoughData() {
+        return statuses.size() >= thresholds.samples();
+    }
+
+    public Integer getAverageSignal() {
+        if (signal == null) {
+            return null;
+        }
+        return signal.getLeft().intValue();
+    }
+
+    public Integer getAverageCCI() {
+        if (cci == null) {
+            return null;
+        }
+
+        return cci.getLeft().intValue();
+    }
+
+    public Integer getAverageSnr() {
+        if (snr == null) {
+            return null;
+        }
+
+        return snr.getLeft().intValue();
+    }
+
+    public Integer getAverageOffset() {
+        if (offset == null) {
+            return null;
+        }
+
+        return offset.getLeft().intValue();
+    }
+
+    public Integer getAverageRdsErrors() {
+        if (rdsErrors == null) {
+            return null;
+        }
+
+        return rdsErrors.getLeft().intValue();
+    }
+
+    public Integer getAverageModulation() {
+        if (modulation == null) {
+            return null;
+        }
+
+        return modulation.getLeft().intValue();
+    }
+
+    public boolean hasTrueModulation() {
+        if (modulation == null) {
+            return true;
+        }
+
+        if (modulation.getLeft() <= 55) {
+            return true;
         }
 
 
-        /*
-        Pair<Float,Float> bandwidth =
-                calculateMeanAndStandardDeviation(Arrays.stream(statuses).map(Status::bandwidth)
-                        .filter(Objects::nonNull)
-                        .filter(b -> b>150)
-                        .map(Float::valueOf)
-                        .toArray(Float[]::new));
+        // If we have an average(!) modulation from more than 55kHz, we must
+        // look at the CCI. Only when it's below 15, we have a true, very strong
+        if (cci==null) {
+            return true;
+        }
 
-         */
-
-        Pair<Float,Float> signal =
-                calculateMeanAndStandardDeviation(statuses.stream().map(Status::signal)
-                        .filter(Objects::nonNull)
-                        .toArray(Float[]::new));
-
-        return /*(bandwidth.getRight() < 0.1) &&*/ (signal.getRight() < 2.0);
+        return cci.getLeft() <= 15;
     }
+
+    public boolean isValidSignalStrength() {
+        return (signal != null) && (signal.getLeft() >= thresholds.signal());
+    }
+
+    public boolean isValidCci() {
+        return (cci != null) && (cci.getLeft() <= thresholds.cci());
+    }
+
+    public boolean isValidSnr() {
+        return (snr != null) && (snr.getLeft() >= thresholds.snr());
+    }
+
+    // -----------------------------------------------------
 
 
     private static Pair<Float,Float> calculateMeanAndStandardDeviation(Float[] array) {
@@ -83,86 +208,53 @@ public class StatusHistory {
         return Pair.of(mean, (float) Math.sqrt(standardDeviation / length));
     }
 
-    public boolean hasEnoughData() {
-        return statuses.size() >= thresholds.samples();
+    private static Pair<Float,Float> calculateMeanAndRange(Float[] array) {
+        Float min = Float.MAX_VALUE;
+        Float max = Float.MIN_VALUE;
+
+        // get the sum of array
+        int length = 0;
+        float sum = 0.0f;
+        for (Float i : array) {
+            if (i != null) {
+                sum += i;
+                length++;
+                if (i<min) {
+                    min = i;
+                }
+                if (i>max) {
+                    max = i;
+                }
+            }
+        }
+
+        if (length==0) {
+            return Pair.of(0f,0f);
+        }
+
+        // get the mean of array
+        float mean = sum / length;
+
+        return Pair.of(mean, max-min);
     }
 
-    public Integer getAverageSignal() {
-        if (statuses == null || statuses.isEmpty()) {
-            return null;
-        }
-        try {
-            Pair<Float, Float> signal =
-                    calculateMeanAndStandardDeviation(statuses.stream().map(Status::signal)
-                            .filter(Objects::nonNull)
-                            .toArray(Float[]::new));
-            return signal.getLeft().intValue();
-        } catch (Exception e) {
-            // LOGGER.warn("Average signal: " + e.getMessage() + " on statuses=" + Arrays.asList(statuses));
-        }
-        return null;
-    }
-
-    public Integer getAverageCCI() {
-        if (statuses == null || statuses.isEmpty()) {
-            return null;
-        }
-        try {
-            Pair<Float, Float> cci =
-                    calculateMeanAndStandardDeviation(statuses.stream().map(Status::cci)
-                            .filter(Objects::nonNull)
-                            .map(Integer::floatValue)
-                            .toArray(Float[]::new));
-            return cci.getLeft().intValue();
-        } catch (Exception e) {
-            // ignore
-        }
-        return null;
-    }
-
-    public Integer getAverageSnr() {
-        if (statuses == null || statuses.isEmpty()) {
-            return null;
-        }
-        try {
-            Pair<Float, Float> snr =
-                    calculateMeanAndStandardDeviation(statuses.stream().map(Status::snr)
-                            .filter(Objects::nonNull)
-                            .map(Integer::floatValue)
-                            .toArray(Float[]::new));
-            Integer ret = snr.getLeft().intValue();
-            return ret;
-        } catch (Exception e) {
-            // ignore
-        }
-        return null;
-    }
-
-    public Integer getAverageOffset() {
+    private Pair<Integer,Integer> getAverageModulationAndPercentualRange() {
         if (statuses == null || statuses.isEmpty()) {
             return null;
         }
         try {
             Pair<Float, Float> offset =
-                    calculateMeanAndStandardDeviation(statuses.stream().map(Status::offset)
+                    calculateMeanAndRange(statuses.stream().map(Status::modulation)
                             .filter(Objects::nonNull)
                             .map(Integer::floatValue)
                             .toArray(Float[]::new));
-            Integer ret = offset.getLeft().intValue();
-            return ret;
+            Float rangePercent = 100 * ((float)offset.getRight() / (float)offset.getLeft());
+
+            return Pair.of(offset.getLeft().intValue(), rangePercent.intValue());
         } catch (Exception e) {
             // ignore
         }
         return null;
-    }
-
-    public int getAverageRdsErrors() {
-        Pair<Float,Float> rdsErrors =
-            calculateMeanAndStandardDeviation(statuses.stream().map(Status::rdsErrors)
-                .filter(Objects::nonNull)
-                .map(Integer::floatValue)
-                .toArray(Float[]::new));
-        return rdsErrors.getLeft().intValue();
     }
 
     public boolean isValidEntry() {
@@ -173,24 +265,14 @@ public class StatusHistory {
         //}
         return (
                 isValidSignalStrength()
-                        && isValidCci()
+                        && hasTrueModulation()
+                        //&& isValidCci()
                         && isValidSnr()
-                        && hasNoLargeOffset());
+                        && hasNoLargeOffset()
+               );
     }
 
-    private boolean hasNoLargeOffset() {
-        return (getAverageOffset() != null) && (getAverageOffset() <= MAX_OFFSET);
-    }
-
-    public boolean isValidSignalStrength() {
-        return (getAverageSignal() != null) && (getAverageSignal() >= thresholds.signal());
-    }
-
-    public boolean isValidCci() {
-        return (getAverageCCI() != null) && (getAverageCCI() <= thresholds.cci());
-    }
-
-    public boolean isValidSnr() {
-        return (getAverageSnr() != null) && (getAverageSnr() >= thresholds.snr());
+    public boolean hasNoLargeOffset() {
+        return ( offset != null) && (offset.getLeft() <= MAX_OFFSET);
     }
 }
