@@ -18,6 +18,8 @@ public class ScannerExecutor {
 
     @PostConstruct
     public void atStartup() {
+        Thread haltedHook = new Thread(() -> { System.out.println("Terminating..."); Runtime.getRuntime().halt(0); });
+        Runtime.getRuntime().addShutdownHook(haltedHook);
         ScannerTask scannerTask = applicationContext.getBean(ScannerTask.class);
         taskExecutor.execute(scannerTask);
     }
