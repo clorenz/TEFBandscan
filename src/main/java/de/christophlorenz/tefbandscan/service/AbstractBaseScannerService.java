@@ -164,6 +164,11 @@ public abstract class AbstractBaseScannerService implements ScannerService {
             return LogQuality.STANDARD;
         }
 
+        if (currentStatus.rdsPi() != null && currentStatus.piErrors() > 0) {
+            LOGGER.info("No logging, since PI " + currentStatus.rdsPi() + " is questionable");
+            return LogQuality.NOP;
+        }
+
         if (!Objects.equals(existingBandscanEntry.getRdsPs(), currentStatus.rdsPs()) &&
                 currentStatus.rdsPi() != null &&
                 currentStatus.psErrors() != null &&
