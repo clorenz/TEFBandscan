@@ -2,9 +2,7 @@ package de.christophlorenz.tefbandscan.service;
 
 import de.christophlorenz.tefbandscan.config.ThresholdsConfig;
 import de.christophlorenz.tefbandscan.model.*;
-import de.christophlorenz.tefbandscan.repository.BandscanRepository;
-import de.christophlorenz.tefbandscan.repository.CommunicationRepository;
-import de.christophlorenz.tefbandscan.repository.RepositoryException;
+import de.christophlorenz.tefbandscan.repository.*;
 import de.christophlorenz.tefbandscan.service.handler.LineHandler;
 import de.christophlorenz.tefbandscan.service.handler.RDSHandler;
 import de.christophlorenz.tefbandscan.service.handler.StatusHandler;
@@ -58,6 +56,17 @@ public class ManualScannerService extends AbstractBaseScannerService implements 
                     LOGGER.info("Logged " + logResult);
                     if (logQuality == LogQuality.STANDARD) {
                         blinkOnDevice();
+                    }
+                }
+            } catch (ConnectionLostException | NoConnectionException e) {
+                LOGGER.info(e + ". Trying to (re)connect...");
+                try {
+                    communicationRepository.reconnect();
+                } catch (RepositoryException ex) {
+                    LOGGER.warn("Cannot yet (re)connect: " + ex);
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException ignore) {
                     }
                 }
             } catch (RepositoryException e) {

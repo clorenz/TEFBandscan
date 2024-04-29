@@ -40,7 +40,7 @@ To run the jar file, you must provide the TEF6686 WIFI configuration parameters 
 and password, e.g.
 
 ```shell
-java -Dtef6686.hostname=localhost -Dtef6686.port=7373 -Dtef6686.password=password -jar target/TEFBandscan-1.0.0-SNAPSHOT.jar
+java -Dtef6686.hostname=192.168.1.49 -Dtef6686.port=7373 -Dtef6686.password=password -jar target/TEFBandscan-1.0.0-SNAPSHOT.jar --auto
 ```
 
 With the parameters `thresholds.auto.signal`, `thresholds.auto.snr`, `thresholds.auto.cci`,
@@ -65,7 +65,7 @@ your TEF receiver (only, when you use the patched version).
 The verbose logging on STDOUT (not to be mixed with the structured CSV logging!) will give you 
 an impression, what happened.
 
-To start, just set the CSV "database" name as parameter, e.g. `--database=manual`. If this
+To start, just append the CSV "database" name as parameter, e.g. `--database=manual`. If this
 parameter is not given, the logging is done into the default CSV file, called `default.csv`.
 
 ### Automatic scan mode
@@ -74,6 +74,6 @@ In this mode, the TEF receiver scans eternally, and every time, it sees a valid 
 it can improve an already existing log, it creates or updates a log entry. Currently, you don't get
 any feedback on your device, but the textual logging on STDOUT is pretty verbose.
 
-To start, you must set the parameter `--auto` and provide the CSV "database" name,
+To start, you must append the parameter `--auto` and provide the CSV "database" name,
 e.g. `--database=auto`. If no "database" name is given, the logging is done into
 the default CSV file, called `default.csv`.

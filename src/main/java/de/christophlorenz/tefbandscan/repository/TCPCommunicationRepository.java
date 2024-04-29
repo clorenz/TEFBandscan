@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -32,10 +33,11 @@ public class TCPCommunicationRepository implements CommunicationRepository {
         try {
             tef6686Socket = new Socket();
             tef6686Socket.connect(new InetSocketAddress(config.hostname(),config.port()), 5000);
+            tef6686Socket.setSoTimeout(5000);
             LOGGER.info("Established socket connection to " + config.hostname() + ":" + config.port());
         } catch (IOException e) {
-            throw new RepositoryException("Cannot initialize socket connection to "
-                    + config.hostname() + ":" + config.port() + ": " + e, e);
+            throw new NoConnectionException("Cannot initialize socket connection to "
+                    + config.hostname() + ":" + config.port() + ": " + e);
         }
 
         // Authenticate
@@ -79,6 +81,18 @@ public class TCPCommunicationRepository implements CommunicationRepository {
     }
 
     @Override
+    public void reconnect() throws RepositoryException {
+        if (tef6686Socket != null && tef6686Socket.isConnected()) {
+            try {
+                tef6686Socket.close();
+            } catch (IOException e) {
+                LOGGER.warn("Cannot close socket: " + e);
+            }
+        }
+        initialize();
+    }
+
+    @Override
     public String read() throws RepositoryException {
         try {
             String line = reader.readLine();
@@ -86,8 +100,11 @@ public class TCPCommunicationRepository implements CommunicationRepository {
                 LOGGER.debug("<" + line);
             }
             return line;
+        } catch (SocketTimeoutException e) {
+            LOGGER.warn("Lost connection");
+            throw new ConnectionLostException("Lost connection");
         } catch (IOException e) {
-            throw new RepositoryException("Cannot read: " + e, e);
+            throw new NoConnectionException("Cannot read: " + e);
         }
     }
 

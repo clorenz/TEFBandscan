@@ -49,6 +49,25 @@ public class SerialCommunicationRepository implements CommunicationRepository{
     }
 
     @Override
+    public void reconnect() throws RepositoryException {
+        if (inputStream != null) {
+            try {
+                inputStream.close();
+            } catch (IOException e) {
+                LOGGER.warn("Cannot close serial input stream: " + e);
+            }
+        }
+        if (writer != null) {
+            try {
+                writer.close();
+            } catch (IOException e) {
+                LOGGER.warn("Cannot close serial output stream: " + e);
+            }
+        }
+        initialize();
+    }
+
+    @Override
     public String read() throws RepositoryException {
         if (serialPort.bytesAvailable() == 0) {
             try {

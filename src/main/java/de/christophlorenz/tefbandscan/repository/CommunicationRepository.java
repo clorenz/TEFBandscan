@@ -7,4 +7,6 @@ public interface CommunicationRepository {
     public String read() throws RepositoryException;
 
     public void write(String data) throws RepositoryException;
+
+    public void reconnect() throws RepositoryException;
 }
