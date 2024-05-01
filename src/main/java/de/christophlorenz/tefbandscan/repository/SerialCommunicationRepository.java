@@ -1,7 +1,11 @@
 package de.christophlorenz.tefbandscan.repository;
 
 import com.fazecast.jSerialComm.SerialPort;
+import com.fazecast.jSerialComm.SerialPortIOException;
+import com.fazecast.jSerialComm.SerialPortInvalidPortException;
+import com.fazecast.jSerialComm.SerialPortTimeoutException;
 import de.christophlorenz.tefbandscan.config.Tef6686Config;
+import java.net.SocketTimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Repository;
@@ -17,6 +21,9 @@ import java.util.stream.Collectors;
 public class SerialCommunicationRepository implements CommunicationRepository{
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SerialCommunicationRepository.class);
+    private static final int BAUDRATE = 115200;
+    private static final int BYTESIZE = 8;
+    private static final int STOPBITS = 0;
 
     private final Tef6686Config config;
     private SerialPort serialPort;
@@ -24,7 +31,7 @@ public class SerialCommunicationRepository implements CommunicationRepository{
     private BufferedReader reader;
     private BufferedWriter writer;
 
-    private Scanner scanner;
+    //private Scanner scanner;
 
     public SerialCommunicationRepository(Tef6686Config config) {
         this.config = config;
@@ -32,24 +39,36 @@ public class SerialCommunicationRepository implements CommunicationRepository{
 
     @Override
     public void initialize() throws RepositoryException {
-        LOGGER.info("Available port=" + Arrays.stream(SerialPort.getCommPorts()).map(s -> s.getSystemPortName()).collect(Collectors.toSet()));
-        serialPort = SerialPort.getCommPort(config.serial());
-        LOGGER.info("serial port=" + serialPort);
+        LOGGER.info("Available serial ports=" + Arrays.stream(SerialPort.getCommPorts()).map(
+            SerialPort::getSystemPortName).collect(Collectors.toSet()));
+        try {
+            serialPort = SerialPort.getCommPort(config.serial());
+        } catch (SerialPortInvalidPortException e) {
+            throw new RepositoryException("Cannot establish serial connection to " + config.serial() + ": " + e);
+        }
+        serialPort.setBaudRate(BAUDRATE);
+        serialPort.setNumDataBits(BYTESIZE);
+        serialPort.setNumStopBits(STOPBITS);
+        serialPort.setParity(SerialPort.NO_PARITY);
         serialPort.openPort();
-        serialPort.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 0, 0);
-        inputStream = serialPort.getInputStream();
-        //reader = new BufferedReader(new InputStreamReader(inputStream));
-
-        scanner = new Scanner(inputStream);
-
-
+        serialPort.setComPortTimeouts(SerialPort.TIMEOUT_READ_SEMI_BLOCKING, 5000, 5000);
+        InputStream inputStream = serialPort.getInputStream();
+        reader = new BufferedReader(new InputStreamReader(inputStream));
         OutputStream outputStream = serialPort.getOutputStream();
         writer = new BufferedWriter(new OutputStreamWriter(outputStream));
         write("x");
+        LOGGER.info("Connected via " + serialPort);
     }
 
     @Override
     public void reconnect() throws RepositoryException {
+        if (reader != null) {
+            try {
+                reader.close();
+            } catch (IOException e) {
+                LOGGER.warn("Cannot close serial reader: " + e);
+            }
+        }
         if (inputStream != null) {
             try {
                 inputStream.close();
@@ -64,65 +83,29 @@ public class SerialCommunicationRepository implements CommunicationRepository{
                 LOGGER.warn("Cannot close serial output stream: " + e);
             }
         }
+        if (serialPort != null && serialPort.isOpen()) {
+            serialPort.closePort();
+        }
         initialize();
     }
 
     @Override
     public String read() throws RepositoryException {
-        if (serialPort.bytesAvailable() == 0) {
-            try {
-                Thread.sleep(10);
-            } catch (InterruptedException ignore) {
-                //
-            }
-            return null;
-        }
-
-
-        for (int j = 0; j < 1000; ++j) {
-            try {
-                var data = inputStream.read();
-                if (data == -1) {
-                    return null;
-                }
-                System.out.print((char)data + "(" + data + ") ");
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        /*
-
-        byte[] readBuffer = new byte[serialPort.bytesAvailable()];
-        int numRead = serialPort.readBytes(readBuffer, readBuffer.length);
-        return new String(readBuffer, Charset.forName("LATIN1"));
-
-        /*
-
-        String line = scanner.nextLine();
-
-        System.out.println("Line=" + line);
-        return line;
-
-        /*
         try {
-            String line = reader.readLine();
-            LOGGER.info("Line=" + line);
-            return line;
+            return reader.readLine();
+        } catch (SerialPortTimeoutException | SerialPortIOException e) {
+            LOGGER.warn("Lost connection");
+            throw new ConnectionLostException("Lost connection");
         } catch (IOException e) {
             throw new RepositoryException("Cannot read line: " + e, e);
         }
-
-         */
-
-        return null;
-
     }
 
     @Override
     public void write(String data) throws RepositoryException {
         try {
             writer.write(data + "\n");
+            writer.flush();
         } catch (IOException e) {
             throw new RepositoryException("Cannot write line: " + e, e);
         }
