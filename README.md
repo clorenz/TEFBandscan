@@ -53,8 +53,10 @@ only logs frequencies with a signal of at least 10dBµV.
 ## Usage
 
 Currently, it is not yet tested run it outside an IDE, but you can configure the
-modes and the name of the CSV. Please note, that currently only the WIFI connection works.
-Its credentials are in `src/main/resources/application.yaml` and must be configured once.
+modes and the name of the CSV. The credentials for WiFi and serial configuration are
+stored in `src/main/resources/application.yaml` and must be configured once, either here
+or with parameters `-Dtef6686.serial=/dev/ttyS1` (example for serial configuration)
+at runtime.
 
 ### Manual scan mode
 
