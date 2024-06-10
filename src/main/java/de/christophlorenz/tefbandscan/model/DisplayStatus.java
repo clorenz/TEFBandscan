@@ -91,7 +91,7 @@ public class DisplayStatus {
     }
 
     public String getSnr() {
-        return snr != null ? (snr + "") : "";
+        return snr != null ? (snr + "") : null;
     }
 
     public Integer getAverageSnr() {
