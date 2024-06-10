@@ -1,6 +1,6 @@
 <div id="status" th:fragment="status(time, displayStatus, logged)">
     <th:block th:if="${displayStatus != null}">
-        <div style="font-size: xxx-large; font-family: monospace;">
+        <div style="font-size: xxx-large;" class="monospaced">
         <th:block th:if="${logged}">
             <span id="freq" th:text="${displayStatus.getFrequency()}" style="background-color: lightgreen;">87.5 MHz</span> &nbsp;
         </th:block>
@@ -15,7 +15,7 @@
             RDS Errors: <th:block th:if="${displayStatus.getRdsErrors() != null}"><span id="rdserrors" th:text="${displayStatus.getRdsErrors() + '%'}"></span></th:block><th:block th:if="${displayStatus.getRdsErrors() == null}">-</th:block><br/>
             Signal strength: <span id="signal" th:text="${displayStatus.getSignal() + 'dBµV'}"></span>&nbsp;<span th:if="${displayStatus.getAverageSignal() != null}" id="avgSignal" th:text="${'(avg: ' + displayStatus.getAverageSignal() + 'dBµV)'}" th:style="${displayStatus.isValidSignalStrength() ? 'background-color:lightgreen;' : 'background-color:red;'}"></span><br/>
             CCI: <span id="cci" th:text="${displayStatus.getCci() + '%'}"></span>&nbsp;<span th:if="${displayStatus.getAverageCci() != null}" id="avgCci" th:text="${'(avg: ' + displayStatus.getAverageCci() + '%)'}" th:style="${displayStatus.isValidCci() ? 'background-color:lightgreen;' : 'background-color:red;'}"></span><br/>
-            S/N ratio: <span id="snr" th:text="${displayStatus.getSnr() + 'dB'}"></span>&nbsp;<span th:if="${displayStatus.getAverageSnr() != null}" id="avgSnr" th:text="${'(avg: ' + displayStatus.getAverageSnr() + 'dB)'}" th:style="${displayStatus.isValidSnr() ? 'background-color:lightgreen;' : 'background-color:red;'}"></span><br/>
+            S/N ratio:  <th:block th:if="${displayStatus.getSnr() != null}"><span id="snr" th:text="${displayStatus.getSnr() + 'dB'}"></span>&nbsp;<span th:if="${displayStatus.getAverageSnr() != null}" id="avgSnr" th:text="${'(avg: ' + displayStatus.getAverageSnr() + 'dB)'}" th:style="${displayStatus.isValidSnr() ? 'background-color:lightgreen;' : 'background-color:red;'}"></span></th:block> <th:block th:if="${displayStatus.getSnr() == null}">-</th:block><br/>
             Average Modulation: <span id="modulation" th:if="${displayStatus.getAverageModulation() != null}" th:text="${displayStatus.getAverageModulation() + 'kHz'}" th:style="${displayStatus.isValidModulation() ? 'background-color:lightgreen;' : 'background-color:red;'}"></span><br/>
             Average offset: <span th:if="${displayStatus.getAverageOffset() != null}" id="offset" th:text="${displayStatus.getAverageOffset() + 'kHz'}" th:style="${displayStatus.isValidOffset() ? 'background-color:lightgreen;' : 'background-color:red;'}"></span><span th:if="${displayStatus.getOffset() == null}">-</span><br/>
         </div>

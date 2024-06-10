@@ -24,9 +24,9 @@
 <table id="bandscan" class="display bandscan compact" style="width: auto;">
     <thead>
         <tr>
-            <th data-field="frequencyKHz">Frequency</th>
-            <th data-field="rdsPI">PI</th>
-            <th data-field="rdsPS">PS</th>
+            <th data-field="frequencyKHz" style="font-family: inherit;">Frequency</th>
+            <th data-field="rdsPI" style="font-family: inherit;">PI</th>
+            <th data-field="rdsPS" style="font-family: inherit;">PS</th>
             <th data-field="psErrors">PS Errors</th>
             <th data-field="rdsErrors">RDS Errors</th>
             <th data-field="signalStrength">signal (dBµV)</th>
@@ -56,9 +56,25 @@
             },
             columnDefs: [
                 {
+                    className: 'monospaced',
                     render: $.fn.dataTable.render.number(',', '.', 0, ''),
                     targets: 0,
                 },
+                {
+                    className: 'monospaced',
+                    targets: 1
+                },
+                {
+                    className: 'monospaced',
+                    render: function(data, type, full) {
+                        if (data != null) {
+                            return data.toString().replace(/\s/g, "_");
+                        } else {
+                            return data;
+                        }
+                    },
+                    targets: 2
+                }
             ],
             columns: [
                 { data: 'frequencyKHz'},

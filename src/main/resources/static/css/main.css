@@ -1,0 +1,7 @@
+table .bandscan {
+    border-width: 1px;
+}
+
+.monospaced {
+    font-family: "Ubuntu Mono", monospace;
+}
